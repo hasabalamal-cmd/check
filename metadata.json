@@ -1,0 +1,6 @@
+{
+  "name": "سند - إدارة الشيكات والفواتير",
+  "description": "نظام مالي ذكي لإدارة المحلات والعملاء، شيكات التحصيل، الفواتير الصادرة والمستلمة والتنبيهات المجدولة.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
