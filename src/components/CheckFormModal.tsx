@@ -3,6 +3,7 @@ import { X, Upload, Calendar, Building, CreditCard, FileText, Image as ImageIcon
 import { CheckItem, Customer, CustomerInvoice } from '../types';
 import { computeCheckStatus, getTodayString } from '../utils/checkCalculations';
 import { isGasConfigured, uploadFileToDriveApi } from '../services/gasApi';
+import { resolveImageUrl } from '../utils/imageUrl';
 
 interface CheckFormModalProps {
   isOpen: boolean;
@@ -410,7 +411,17 @@ export const CheckFormModal: React.FC<CheckFormModalProps> = ({
             </div>
             {image && (
               <div className="mt-2 relative rounded-lg overflow-hidden border border-slate-700 w-36 h-20 bg-slate-950">
-                <img src={image} alt="صورة الشيك" className="w-full h-full object-cover" />
+                <img
+                  src={resolveImageUrl(image, 400).displayUrl}
+                  alt="صورة الشيك"
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    // Fallback to raw original URL
+                    if (e.currentTarget.src !== image) {
+                      e.currentTarget.src = image;
+                    }
+                  }}
+                />
                 <button
                   type="button"
                   onClick={() => {

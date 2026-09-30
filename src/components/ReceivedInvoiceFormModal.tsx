@@ -3,6 +3,7 @@ import { X, Upload, Calendar, Building2, FileCheck, CheckCircle2, Clock, Image a
 import { ReceivedInvoice, ReceiptStatus } from '../types';
 import { getTodayString } from '../utils/checkCalculations';
 import { isGasConfigured, uploadFileToDriveApi } from '../services/gasApi';
+import { resolveImageUrl } from '../utils/imageUrl';
 
 interface ReceivedInvoiceFormModalProps {
   isOpen: boolean;
@@ -317,7 +318,16 @@ export const ReceivedInvoiceFormModal: React.FC<ReceivedInvoiceFormModalProps> =
             </div>
             {image && (
               <div className="mt-2 relative rounded-lg overflow-hidden border border-slate-700 w-36 h-20 bg-slate-950">
-                <img src={image} alt="صورة الفاتورة" className="w-full h-full object-cover" />
+                <img
+                  src={resolveImageUrl(image, 400).displayUrl}
+                  alt="صورة الفاتورة"
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    if (e.currentTarget.src !== image) {
+                      e.currentTarget.src = image;
+                    }
+                  }}
+                />
                 <button
                   type="button"
                   onClick={() => {
