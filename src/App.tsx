@@ -113,19 +113,19 @@ export default function App() {
       setIsLoadingGas(true);
       try {
         const gasData = await fetchAllDataFromGas();
-        if (gasData.customers && gasData.customers.length > 0) {
+        if (Array.isArray(gasData.customers)) {
           setCustomers(gasData.customers);
           saveCustomers(gasData.customers);
         }
-        if (gasData.invoices && gasData.invoices.length > 0) {
+        if (Array.isArray(gasData.invoices)) {
           setCustomerInvoices(gasData.invoices);
           saveCustomerInvoices(gasData.invoices);
         }
-        if (gasData.checks && gasData.checks.length > 0) {
+        if (Array.isArray(gasData.checks)) {
           setChecks(gasData.checks);
           saveChecks(gasData.checks);
         }
-        if (gasData.receivedInvoices && gasData.receivedInvoices.length > 0) {
+        if (Array.isArray(gasData.receivedInvoices)) {
           setReceivedInvoices(gasData.receivedInvoices);
           saveReceivedInvoices(gasData.receivedInvoices);
         }
