@@ -12,9 +12,11 @@ import {
   CreditCard,
   MessageCircle,
   ExternalLink,
+  Eye,
 } from 'lucide-react';
 import { Customer, CheckItem, CustomerInvoice } from '../types';
 import { formatCurrency } from '../utils/checkCalculations';
+import { CustomerDetailModal } from './CustomerDetailModal';
 
 interface CustomersViewProps {
   customers: Customer[];
@@ -24,6 +26,10 @@ interface CustomersViewProps {
   onEditCustomer: (customer: Customer) => void;
   onDeleteCustomer: (id: string) => void;
   onSelectCustomer: (customerId: string) => void;
+  onCashCheck?: (checkId: string) => void;
+  onPreviewImage?: (url: string, title: string) => void;
+  onAddCheckForCustomer?: (customer: Customer) => void;
+  onAddInvoiceForCustomer?: (customer: Customer) => void;
 }
 
 export const CustomersView: React.FC<CustomersViewProps> = ({
@@ -34,8 +40,13 @@ export const CustomersView: React.FC<CustomersViewProps> = ({
   onEditCustomer,
   onDeleteCustomer,
   onSelectCustomer,
+  onCashCheck,
+  onPreviewImage,
+  onAddCheckForCustomer,
+  onAddInvoiceForCustomer,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCustomerForModal, setSelectedCustomerForModal] = useState<Customer | null>(null);
 
   const filteredCustomers = useMemo(() => {
     return customers.filter((cust) => {
@@ -241,17 +252,48 @@ export const CustomersView: React.FC<CustomersViewProps> = ({
                   </div>
 
                   <button
-                    onClick={() => onSelectCustomer(cust.id)}
-                    className="text-xs text-indigo-400 hover:text-indigo-300 font-medium flex items-center gap-1"
+                    onClick={() => setSelectedCustomerForModal(cust)}
+                    className="px-3 py-1.5 bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors"
                   >
-                    <span>عرض شيكات المحل</span>
-                    <ExternalLink className="w-3 h-3" />
+                    <Eye className="w-3.5 h-3.5" />
+                    <span>التفاصيل والشيكات</span>
                   </button>
                 </div>
               </div>
             );
           })}
         </div>
+      )}
+
+      {/* Customer Full Detail Modal */}
+      {selectedCustomerForModal && (
+        <CustomerDetailModal
+          isOpen={!!selectedCustomerForModal}
+          onClose={() => setSelectedCustomerForModal(null)}
+          customer={selectedCustomerForModal}
+          customerChecks={checks.filter((c) => c.customerId === selectedCustomerForModal.id)}
+          customerInvoices={customerInvoices.filter((i) => i.customerId === selectedCustomerForModal.id)}
+          onAddCheck={() => {
+            const c = selectedCustomerForModal;
+            setSelectedCustomerForModal(null);
+            if (onAddCheckForCustomer) onAddCheckForCustomer(c);
+          }}
+          onAddInvoice={() => {
+            const c = selectedCustomerForModal;
+            setSelectedCustomerForModal(null);
+            if (onAddInvoiceForCustomer) onAddInvoiceForCustomer(c);
+          }}
+          onEditCustomer={(cust) => {
+            setSelectedCustomerForModal(null);
+            onEditCustomer(cust);
+          }}
+          onCashCheck={(chkId) => {
+            if (onCashCheck) onCashCheck(chkId);
+          }}
+          onPreviewImage={(url, title) => {
+            if (onPreviewImage) onPreviewImage(url, title);
+          }}
+        />
       )}
     </div>
   );

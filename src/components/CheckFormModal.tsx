@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { X, Upload, Calendar, Building, CreditCard, FileText, Image as ImageIcon, CheckCircle } from 'lucide-react';
+import { X, Upload, Calendar, Building, CreditCard, FileText, Image as ImageIcon, CheckCircle, Loader2, CheckCircle2 } from 'lucide-react';
 import { CheckItem, Customer, CustomerInvoice } from '../types';
 import { computeCheckStatus, getTodayString } from '../utils/checkCalculations';
+import { isGasConfigured, uploadFileToDriveApi } from '../services/gasApi';
 
 interface CheckFormModalProps {
   isOpen: boolean;
@@ -29,6 +30,9 @@ export const CheckFormModal: React.FC<CheckFormModalProps> = ({
   const [notes, setNotes] = useState('');
   const [image, setImage] = useState<string>('');
   const [manualStatus, setManualStatus] = useState<'none' | 'cashed' | 'cancelled'>('none');
+  const [cashedDate, setCashedDate] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
+  const [isDriveUploaded, setIsDriveUploaded] = useState(false);
 
   useEffect(() => {
     if (initialData) {
@@ -40,7 +44,15 @@ export const CheckFormModal: React.FC<CheckFormModalProps> = ({
       setBankName(initialData.bankName || 'مصرف الراجحي');
       setNotes(initialData.notes || '');
       setImage(initialData.image || '');
-      setManualStatus(initialData.manualStatus || (initialData.status === 'cashed' ? 'cashed' : initialData.status === 'cancelled' ? 'cancelled' : 'none'));
+      setManualStatus(
+        initialData.manualStatus === 'cashed' || initialData.status === 'cashed' || initialData.status === 'مدفوع'
+          ? 'cashed'
+          : initialData.manualStatus === 'cancelled' || initialData.status === 'cancelled' || initialData.status === 'ملغي'
+          ? 'cancelled'
+          : 'none'
+      );
+      setCashedDate(initialData.cashedDate || (initialData.status === 'cashed' ? getTodayString() : ''));
+      setIsDriveUploaded(Boolean(initialData.image && initialData.image.includes('drive.google.com')));
     } else {
       setCheckNumber(`CHK-${Math.floor(10000 + Math.random() * 90000)}`);
       setCustomerId(customers[0]?.id || '');
@@ -51,20 +63,42 @@ export const CheckFormModal: React.FC<CheckFormModalProps> = ({
       setNotes('');
       setImage('');
       setManualStatus('none');
+      setCashedDate('');
+      setIsDriveUploaded(false);
     }
   }, [initialData, isOpen, customers]);
 
   if (!isOpen) return null;
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImage(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+      const base64Data = reader.result as string;
+      setImage(base64Data);
+
+      if (isGasConfigured()) {
+        try {
+          setIsUploading(true);
+          const uploadRes = await uploadFileToDriveApi(
+            base64Data,
+            `cheque_${Date.now()}_${file.name}`,
+            file.type || 'image/jpeg'
+          );
+          if (uploadRes?.fileUrl) {
+            setImage(uploadRes.fileUrl);
+            setIsDriveUploaded(true);
+          }
+        } catch (err) {
+          console.warn('Google Drive direct upload skipped or failed, using local file representation', err);
+        } finally {
+          setIsUploading(false);
+        }
+      }
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleUseSampleCheckImage = () => {
@@ -85,6 +119,7 @@ export const CheckFormModal: React.FC<CheckFormModalProps> = ({
     </svg>`;
     const dataUrl = `data:image/svg+xml;utf8,${encodeURIComponent(svgCheck)}`;
     setImage(dataUrl);
+    setIsDriveUploaded(false);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -115,7 +150,7 @@ export const CheckFormModal: React.FC<CheckFormModalProps> = ({
       image: image || undefined,
       status: computedStatus,
       manualStatus: mStatus,
-      cashedDate: mStatus === 'cashed' ? (initialData?.cashedDate || getTodayString()) : undefined,
+      cashedDate: mStatus === 'cashed' ? (cashedDate || getTodayString()) : undefined,
     });
 
     onClose();
@@ -273,9 +308,9 @@ export const CheckFormModal: React.FC<CheckFormModalProps> = ({
           </div>
 
           {/* Status Override */}
-          <div className="bg-slate-800/60 p-3 rounded-xl border border-slate-700/50">
-            <label className="block text-xs font-semibold text-slate-300 mb-2">
-              حالة الشيك اليدوية:
+          <div className="bg-slate-800/60 p-3.5 rounded-xl border border-slate-700/50 space-y-2.5">
+            <label className="block text-xs font-semibold text-slate-300">
+              حالة الشيك:
             </label>
             <div className="grid grid-cols-3 gap-2">
               <button
@@ -291,7 +326,10 @@ export const CheckFormModal: React.FC<CheckFormModalProps> = ({
               </button>
               <button
                 type="button"
-                onClick={() => setManualStatus('cashed')}
+                onClick={() => {
+                  setManualStatus('cashed');
+                  if (!cashedDate) setCashedDate(getTodayString());
+                }}
                 className={`py-2 px-3 rounded-lg text-xs font-medium border flex items-center justify-center gap-1 transition-colors ${
                   manualStatus === 'cashed'
                     ? 'bg-emerald-600/30 border-emerald-500 text-emerald-300'
@@ -313,16 +351,43 @@ export const CheckFormModal: React.FC<CheckFormModalProps> = ({
                 ملغي
               </button>
             </div>
-            <p className="text-[11px] text-slate-400 mt-2">
+
+            {manualStatus === 'cashed' && (
+              <div className="pt-2 border-t border-slate-700/50">
+                <label className="block text-xs text-slate-400 mb-1">تاريخ الصرف الفعلي:</label>
+                <input
+                  type="date"
+                  value={cashedDate}
+                  onChange={(e) => setCashedDate(e.target.value)}
+                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-white text-xs font-mono focus:outline-none focus:border-emerald-500"
+                />
+              </div>
+            )}
+
+            <p className="text-[11px] text-slate-400">
               إذا تم اختيار "تلقائي حسب التاريخ"، يحسب النظام حالته آلياً (قادم، مستحق اليوم، أو متأخر).
             </p>
           </div>
 
           {/* Check Image Attachment */}
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-1">
-              صورة الشيك
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-sm font-medium text-slate-300">
+                صورة الشيك (Google Drive)
+              </label>
+              {isUploading && (
+                <span className="text-xs text-blue-400 flex items-center gap-1">
+                  <Loader2 className="w-3 h-3 animate-spin" />
+                  <span>جاري الرفع إلى Google Drive...</span>
+                </span>
+              )}
+              {isDriveUploaded && !isUploading && (
+                <span className="text-xs text-emerald-400 flex items-center gap-1">
+                  <CheckCircle2 className="w-3 h-3" />
+                  <span>تم الرفع إلى Google Drive</span>
+                </span>
+              )}
+            </div>
             <div className="flex flex-col sm:flex-row gap-3 items-center">
               <label className="flex-1 w-full flex items-center justify-center gap-2 px-4 py-3 bg-slate-800 hover:bg-slate-700/80 border border-dashed border-slate-600 rounded-xl cursor-pointer text-slate-300 hover:text-white transition-colors text-sm">
                 <Upload className="w-4 h-4 text-blue-400" />
@@ -348,7 +413,10 @@ export const CheckFormModal: React.FC<CheckFormModalProps> = ({
                 <img src={image} alt="صورة الشيك" className="w-full h-full object-cover" />
                 <button
                   type="button"
-                  onClick={() => setImage('')}
+                  onClick={() => {
+                    setImage('');
+                    setIsDriveUploaded(false);
+                  }}
                   className="absolute top-1 left-1 p-1 bg-rose-600 text-white rounded-full text-xs hover:bg-rose-700"
                 >
                   <X className="w-3 h-3" />

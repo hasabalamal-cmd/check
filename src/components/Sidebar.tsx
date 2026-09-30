@@ -9,6 +9,7 @@ import {
   FileUp,
   RotateCcw,
   Sparkles,
+  Database,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -19,6 +20,7 @@ interface SidebarProps {
   unreceivedCount: number;
   dueTodayCount: number;
   onResetSeedData: () => void;
+  onOpenSettings?: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -29,6 +31,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   unreceivedCount,
   dueTodayCount,
   onResetSeedData,
+  onOpenSettings,
 }) => {
   const menuItems = [
     {
@@ -113,6 +116,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
         {/* Bottom Utility Box */}
         <div className="pt-4 border-t border-slate-800/80 space-y-2">
+          {onOpenSettings && (
+            <button
+              onClick={onOpenSettings}
+              className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-emerald-600/15 hover:bg-emerald-600/25 text-emerald-300 rounded-xl text-xs font-semibold border border-emerald-500/30 transition-colors"
+            >
+              <Database className="w-3.5 h-3.5" />
+              <span>إعدادات قاعدة البيانات</span>
+            </button>
+          )}
           <button
             onClick={onResetSeedData}
             className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-slate-800/60 hover:bg-slate-800 text-slate-400 hover:text-slate-200 rounded-xl text-xs font-medium border border-slate-700/60 transition-colors"

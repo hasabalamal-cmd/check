@@ -67,8 +67,13 @@ export const ChecksView: React.FC<ChecksViewProps> = ({
         }
 
         // Status filter
-        if (statusFilter !== 'all' && check.status !== statusFilter) {
-          return false;
+        if (statusFilter !== 'all') {
+          const s = check.status;
+          if (statusFilter === 'upcoming' && s !== 'upcoming' && s !== 'قادم') return false;
+          if (statusFilter === 'due_today' && s !== 'due_today' && s !== 'مستحق اليوم') return false;
+          if (statusFilter === 'overdue' && s !== 'overdue' && s !== 'متأخر') return false;
+          if (statusFilter === 'cashed' && s !== 'cashed' && s !== 'تم صرفه' && s !== 'مدفوع') return false;
+          if (statusFilter === 'cancelled' && s !== 'cancelled' && s !== 'ملغي') return false;
         }
 
         // Customer filter
@@ -205,7 +210,7 @@ export const ChecksView: React.FC<ChecksViewProps> = ({
         <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-700/60 text-xs">
           <div className="flex flex-wrap items-center gap-1.5">
             <span className="text-slate-400 text-xs ml-1">تصفية سريعة:</span>
-            {(['all', 'due_today', 'overdue', 'upcoming', 'cashed'] as const).map((st) => {
+            {(['all', 'upcoming', 'due_today', 'overdue', 'cashed', 'cancelled'] as const).map((st) => {
               const label =
                 st === 'all'
                   ? 'الكل'
@@ -213,7 +218,14 @@ export const ChecksView: React.FC<ChecksViewProps> = ({
               const count =
                 st === 'all'
                   ? checks.length
-                  : checks.filter((c) => c.status === st).length;
+                  : checks.filter((c) => {
+                      if (st === 'upcoming') return c.status === 'upcoming' || c.status === 'قادم';
+                      if (st === 'due_today') return c.status === 'due_today' || c.status === 'مستحق اليوم';
+                      if (st === 'overdue') return c.status === 'overdue' || c.status === 'متأخر';
+                      if (st === 'cashed') return c.status === 'cashed' || c.status === 'تم صرفه' || c.status === 'مدفوع';
+                      if (st === 'cancelled') return c.status === 'cancelled' || c.status === 'ملغي';
+                      return c.status === st;
+                    }).length;
 
               return (
                 <button
@@ -221,7 +233,7 @@ export const ChecksView: React.FC<ChecksViewProps> = ({
                   onClick={() => setStatusFilter(st)}
                   className={`px-2.5 py-1 rounded-lg font-medium transition-all ${
                     statusFilter === st
-                      ? 'bg-blue-600 text-white font-bold'
+                      ? 'bg-blue-600 text-white font-bold shadow'
                       : 'bg-slate-900 text-slate-400 hover:text-slate-200'
                   }`}
                 >

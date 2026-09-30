@@ -19,6 +19,24 @@ import {
   formatArabicDate,
 } from './utils/checkCalculations';
 import { initAuth } from './services/auth';
+import {
+  isGasConfigured,
+  fetchAllDataFromGas,
+  createCustomerInGas,
+  updateCustomerInGas,
+  deleteCustomerInGas,
+  createInvoiceInGas,
+  updateInvoiceInGas,
+  deleteInvoiceInGas,
+  createChequeInGas,
+  updateChequeInGas,
+  deleteChequeInGas,
+  updateChequeStatusInGas,
+  createReceivedInvoiceInGas,
+  updateReceivedInvoiceInGas,
+  deleteReceivedInvoiceInGas,
+  updateReceivedInvoiceStatusInGas,
+} from './services/gasApi';
 
 // Components
 import { Navbar } from './components/Navbar';
@@ -38,6 +56,7 @@ import { CustomerFormModal } from './components/CustomerFormModal';
 import { ImagePreviewModal } from './components/ImagePreviewModal';
 import { NotificationCenterModal } from './components/NotificationCenterModal';
 import { GoogleSheetsModal } from './components/GoogleSheetsModal';
+import { SettingsModal } from './components/SettingsModal';
 
 export default function App() {
   // Main Data States
@@ -55,6 +74,11 @@ export default function App() {
 
   // Browser Notification Permission
   const [hasBrowserPermission, setHasBrowserPermission] = useState<boolean>(false);
+
+  // Cloud Database States
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const [isLoadingGas, setIsLoadingGas] = useState(false);
+  const [gasNotification, setGasNotification] = useState<string | null>(null);
 
   // Modal Open States
   const [isCheckModalOpen, setIsCheckModalOpen] = useState(false);
@@ -74,14 +98,50 @@ export default function App() {
 
   const [previewImage, setPreviewImage] = useState<{ url: string; title: string } | null>(null);
 
-  // Initialize data on mount
-  useEffect(() => {
+  // Load data from Google Sheets API with fallback to LocalStorage
+  const loadData = useCallback(async () => {
+    // 1. Initial immediate load from local cache
     const data = loadStoredData();
     setCustomers(data.customers);
     setChecks(data.checks);
     setCustomerInvoices(data.customerInvoices);
     setReceivedInvoices(data.receivedInvoices);
     setNotifications(data.notifications);
+
+    // 2. Fetch fresh data from Google Apps Script if configured
+    if (isGasConfigured()) {
+      setIsLoadingGas(true);
+      try {
+        const gasData = await fetchAllDataFromGas();
+        if (gasData.customers && gasData.customers.length > 0) {
+          setCustomers(gasData.customers);
+          saveCustomers(gasData.customers);
+        }
+        if (gasData.invoices && gasData.invoices.length > 0) {
+          setCustomerInvoices(gasData.invoices);
+          saveCustomerInvoices(gasData.invoices);
+        }
+        if (gasData.checks && gasData.checks.length > 0) {
+          setChecks(gasData.checks);
+          saveChecks(gasData.checks);
+        }
+        if (gasData.receivedInvoices && gasData.receivedInvoices.length > 0) {
+          setReceivedInvoices(gasData.receivedInvoices);
+          saveReceivedInvoices(gasData.receivedInvoices);
+        }
+        setGasNotification('تمت مزامنة البيانات بنجاح من Google Sheets');
+        setTimeout(() => setGasNotification(null), 4000);
+      } catch (err: any) {
+        console.warn('Google Apps Script sync offline, using local cache:', err);
+      } finally {
+        setIsLoadingGas(false);
+      }
+    }
+  }, []);
+
+  // Initialize data on mount
+  useEffect(() => {
+    loadData();
 
     // Check browser notification permission
     if (typeof window !== 'undefined' && 'Notification' in window) {
@@ -97,7 +157,7 @@ export default function App() {
     return () => {
       if (unsubscribe) unsubscribe();
     };
-  }, []);
+  }, [loadData]);
 
   // Run automated check scanner
   const runBotScan = useCallback(
@@ -175,14 +235,16 @@ export default function App() {
   };
 
   // ==================== Customer Handlers ====================
-  const handleSaveCustomer = (customerData: Partial<Customer>) => {
+  const handleSaveCustomer = async (customerData: Partial<Customer>) => {
     let updated: Customer[];
+    let targetCustomer: Customer;
+    const isEdit = Boolean(customerToEdit);
+
     if (customerToEdit) {
-      updated = customers.map((c) =>
-        c.id === customerToEdit.id ? ({ ...c, ...customerData } as Customer) : c
-      );
+      targetCustomer = { ...customerToEdit, ...customerData } as Customer;
+      updated = customers.map((c) => (c.id === customerToEdit.id ? targetCustomer : c));
     } else {
-      const newCust: Customer = {
+      targetCustomer = {
         id: `cust-${Date.now()}`,
         name: customerData.name || '',
         contactPerson: customerData.contactPerson || '',
@@ -191,14 +253,27 @@ export default function App() {
         notes: customerData.notes || '',
         createdAt: new Date().toISOString(),
       };
-      updated = [newCust, ...customers];
+      updated = [targetCustomer, ...customers];
     }
     setCustomers(updated);
     saveCustomers(updated);
     setCustomerToEdit(null);
+
+    // Sync to Google Apps Script
+    if (isGasConfigured()) {
+      try {
+        if (isEdit) {
+          await updateCustomerInGas(targetCustomer);
+        } else {
+          await createCustomerInGas(targetCustomer);
+        }
+      } catch (err) {
+        console.warn('Error syncing customer to GAS:', err);
+      }
+    }
   };
 
-  const handleDeleteCustomer = (id: string) => {
+  const handleDeleteCustomer = async (id: string) => {
     const cust = customers.find((c) => c.id === id);
     if (!cust) return;
     const confirmDelete = window.confirm(`هل أنت متأكد من حذف بيانات المحل "${cust.name}"؟`);
@@ -207,17 +282,27 @@ export default function App() {
     const updated = customers.filter((c) => c.id !== id);
     setCustomers(updated);
     saveCustomers(updated);
+
+    if (isGasConfigured()) {
+      try {
+        await deleteCustomerInGas(id);
+      } catch (err) {
+        console.warn('Error deleting customer in GAS:', err);
+      }
+    }
   };
 
   // ==================== Check Handlers ====================
-  const handleSaveCheck = (checkData: Partial<CheckItem>) => {
+  const handleSaveCheck = async (checkData: Partial<CheckItem>) => {
     let updated: CheckItem[];
+    let targetCheck: CheckItem;
+    const isEdit = Boolean(checkToEdit);
+
     if (checkToEdit) {
-      updated = checks.map((chk) =>
-        chk.id === checkToEdit.id ? ({ ...chk, ...checkData } as CheckItem) : chk
-      );
+      targetCheck = { ...checkToEdit, ...checkData } as CheckItem;
+      updated = checks.map((chk) => (chk.id === checkToEdit.id ? targetCheck : chk));
     } else {
-      const newCheck: CheckItem = {
+      targetCheck = {
         id: `chk-${Date.now()}`,
         checkNumber: checkData.checkNumber || '',
         customerId: checkData.customerId || '',
@@ -234,14 +319,27 @@ export default function App() {
         cashedDate: checkData.cashedDate,
         createdAt: new Date().toISOString(),
       };
-      updated = [newCheck, ...checks];
+      updated = [targetCheck, ...checks];
     }
     setChecks(updated);
     saveChecks(updated);
     setCheckToEdit(null);
+
+    // Sync to Google Apps Script
+    if (isGasConfigured()) {
+      try {
+        if (isEdit) {
+          await updateChequeInGas(targetCheck);
+        } else {
+          await createChequeInGas(targetCheck);
+        }
+      } catch (err) {
+        console.warn('Error syncing cheque to GAS:', err);
+      }
+    }
   };
 
-  const handleDeleteCheck = (id: string) => {
+  const handleDeleteCheck = async (id: string) => {
     const chk = checks.find((c) => c.id === id);
     if (!chk) return;
     const confirmDelete = window.confirm(`هل أنت متأكد من حذف الشيك رقم "${chk.checkNumber}"؟`);
@@ -250,17 +348,26 @@ export default function App() {
     const updated = checks.filter((c) => c.id !== id);
     setChecks(updated);
     saveChecks(updated);
+
+    if (isGasConfigured()) {
+      try {
+        await deleteChequeInGas(id);
+      } catch (err) {
+        console.warn('Error deleting cheque in GAS:', err);
+      }
+    }
   };
 
   // One-click cash check action
-  const handleCashCheck = (checkId: string) => {
+  const handleCashCheck = async (checkId: string) => {
+    const today = getTodayString();
     const updated = checks.map((c) => {
       if (c.id === checkId) {
         return {
           ...c,
           status: 'cashed' as const,
           manualStatus: 'cashed' as const,
-          cashedDate: getTodayString(),
+          cashedDate: today,
         };
       }
       return c;
@@ -276,35 +383,59 @@ export default function App() {
       origin: { y: 0.7 },
       colors: ['#10b981', '#3b82f6', '#f59e0b'],
     });
+
+    if (isGasConfigured()) {
+      try {
+        await updateChequeStatusInGas(checkId, 'مدفوع', today);
+      } catch (err) {
+        console.warn('Error updating cheque status in GAS:', err);
+      }
+    }
   };
 
   // ==================== Customer Invoice Handlers ====================
-  const handleSaveCustomerInvoice = (invData: Partial<CustomerInvoice>) => {
+  const handleSaveCustomerInvoice = async (invData: Partial<CustomerInvoice>) => {
     let updated: CustomerInvoice[];
+    let targetInv: CustomerInvoice;
+    const isEdit = Boolean(customerInvoiceToEdit);
+
     if (customerInvoiceToEdit) {
-      updated = customerInvoices.map((inv) =>
-        inv.id === customerInvoiceToEdit.id ? ({ ...inv, ...invData } as CustomerInvoice) : inv
-      );
+      targetInv = { ...customerInvoiceToEdit, ...invData } as CustomerInvoice;
+      updated = customerInvoices.map((inv) => (inv.id === customerInvoiceToEdit.id ? targetInv : inv));
     } else {
-      const newInv: CustomerInvoice = {
+      targetInv = {
         id: `cinv-${Date.now()}`,
         invoiceNumber: invData.invoiceNumber || '',
         customerId: invData.customerId || '',
         customerName: invData.customerName || '',
         amount: invData.amount || 0,
         invoiceDate: invData.invoiceDate || getTodayString(),
+        receiptStatus: invData.receiptStatus || 'مستحق',
+        receiptDate: invData.receiptDate,
         notes: invData.notes,
         image: invData.image,
         createdAt: new Date().toISOString(),
       };
-      updated = [newInv, ...customerInvoices];
+      updated = [targetInv, ...customerInvoices];
     }
     setCustomerInvoices(updated);
     saveCustomerInvoices(updated);
     setCustomerInvoiceToEdit(null);
+
+    if (isGasConfigured()) {
+      try {
+        if (isEdit) {
+          await updateInvoiceInGas(targetInv);
+        } else {
+          await createInvoiceInGas(targetInv);
+        }
+      } catch (err) {
+        console.warn('Error syncing customer invoice to GAS:', err);
+      }
+    }
   };
 
-  const handleDeleteCustomerInvoice = (id: string) => {
+  const handleDeleteCustomerInvoice = async (id: string) => {
     const inv = customerInvoices.find((i) => i.id === id);
     if (!inv) return;
     const confirmDelete = window.confirm(`هل أنت متأكد من حذف فاتورة العميل رقم "${inv.invoiceNumber}"؟`);
@@ -313,22 +444,38 @@ export default function App() {
     const updated = customerInvoices.filter((i) => i.id !== id);
     setCustomerInvoices(updated);
     saveCustomerInvoices(updated);
+
+    if (isGasConfigured()) {
+      try {
+        await deleteInvoiceInGas(id);
+      } catch (err) {
+        console.warn('Error deleting invoice in GAS:', err);
+      }
+    }
   };
 
   const handleAddCheckForInvoice = (inv: CustomerInvoice) => {
-    setCheckToEdit(null);
+    setCheckToEdit({
+      customerId: inv.customerId,
+      customerName: inv.customerName,
+      linkedInvoiceId: inv.id,
+      linkedInvoiceNumber: inv.invoiceNumber,
+      amount: inv.amount,
+    } as any);
     setIsCheckModalOpen(true);
   };
 
   // ==================== Received Invoices Handlers (Standalone!) ====================
-  const handleSaveReceivedInvoice = (invData: Partial<ReceivedInvoice>) => {
+  const handleSaveReceivedInvoice = async (invData: Partial<ReceivedInvoice>) => {
     let updated: ReceivedInvoice[];
+    let targetInv: ReceivedInvoice;
+    const isEdit = Boolean(receivedInvoiceToEdit);
+
     if (receivedInvoiceToEdit) {
-      updated = receivedInvoices.map((inv) =>
-        inv.id === receivedInvoiceToEdit.id ? ({ ...inv, ...invData } as ReceivedInvoice) : inv
-      );
+      targetInv = { ...receivedInvoiceToEdit, ...invData } as ReceivedInvoice;
+      updated = receivedInvoices.map((inv) => (inv.id === receivedInvoiceToEdit.id ? targetInv : inv));
     } else {
-      const newInv: ReceivedInvoice = {
+      targetInv = {
         id: `rinv-${Date.now()}`,
         invoiceNumber: invData.invoiceNumber || '',
         sourceName: invData.sourceName || '',
@@ -337,16 +484,29 @@ export default function App() {
         notes: invData.notes,
         image: invData.image,
         receiptStatus: invData.receiptStatus || 'not_received', // Manual only!
+        receiptDate: invData.receiptDate,
         createdAt: new Date().toISOString(),
       };
-      updated = [newInv, ...receivedInvoices];
+      updated = [targetInv, ...receivedInvoices];
     }
     setReceivedInvoices(updated);
     saveReceivedInvoices(updated);
     setReceivedInvoiceToEdit(null);
+
+    if (isGasConfigured()) {
+      try {
+        if (isEdit) {
+          await updateReceivedInvoiceInGas(targetInv);
+        } else {
+          await createReceivedInvoiceInGas(targetInv);
+        }
+      } catch (err) {
+        console.warn('Error syncing received invoice to GAS:', err);
+      }
+    }
   };
 
-  const handleDeleteReceivedInvoice = (id: string) => {
+  const handleDeleteReceivedInvoice = async (id: string) => {
     const inv = receivedInvoices.find((i) => i.id === id);
     if (!inv) return;
     const confirmDelete = window.confirm(`هل أنت متأكد من حذف الفاتورة المستلمة "${inv.invoiceNumber}"؟`);
@@ -355,13 +515,26 @@ export default function App() {
     const updated = receivedInvoices.filter((i) => i.id !== id);
     setReceivedInvoices(updated);
     saveReceivedInvoices(updated);
+
+    if (isGasConfigured()) {
+      try {
+        await deleteReceivedInvoiceInGas(id);
+      } catch (err) {
+        console.warn('Error deleting received invoice in GAS:', err);
+      }
+    }
   };
 
   // Direct manual toggle for Received Invoice: strictly manual!
-  const handleToggleReceiptStatus = (id: string) => {
+  const handleToggleReceiptStatus = async (id: string) => {
+    let nextStatusArabic = 'لم يتم الاستلام';
+    let targetDate = '';
     const updated = receivedInvoices.map((inv) => {
       if (inv.id === id) {
-        const nextStatus = inv.receiptStatus === 'received' ? ('not_received' as const) : ('received' as const);
+        const isCurrentReceived = inv.receiptStatus === 'received' || inv.receiptStatus === 'تم الاستلام';
+        const nextStatus = isCurrentReceived ? ('not_received' as const) : ('received' as const);
+        nextStatusArabic = nextStatus === 'received' ? 'تم الاستلام' : 'لم يتم الاستلام';
+        targetDate = nextStatus === 'received' ? getTodayString() : '';
         if (nextStatus === 'received') {
           confetti({
             particleCount: 60,
@@ -372,6 +545,7 @@ export default function App() {
         return {
           ...inv,
           receiptStatus: nextStatus,
+          receiptDate: targetDate,
         };
       }
       return inv;
@@ -379,6 +553,14 @@ export default function App() {
 
     setReceivedInvoices(updated);
     saveReceivedInvoices(updated);
+
+    if (isGasConfigured()) {
+      try {
+        await updateReceivedInvoiceStatusInGas(id, nextStatusArabic, targetDate);
+      } catch (err) {
+        console.warn('Error updating received invoice status in GAS:', err);
+      }
+    }
   };
 
   // ==================== Notifications Handlers ====================
@@ -439,7 +621,18 @@ export default function App() {
         }}
         activeTab={activeTab}
         onSelectTab={setActiveTab}
+        isGasConnected={isGasConfigured()}
+        isLoadingGas={isLoadingGas}
+        onOpenSettings={() => setIsSettingsModalOpen(true)}
+        onRefreshGasData={loadData}
       />
+
+      {/* Cloud Sync Toast Notification */}
+      {gasNotification && (
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 px-4 py-2 bg-emerald-600/90 text-white text-xs font-semibold rounded-full shadow-xl border border-emerald-400/40 backdrop-blur-md animate-in fade-in slide-in-from-top-4">
+          {gasNotification}
+        </div>
+      )}
 
       <div className="flex-1 flex max-w-7xl w-full mx-auto">
         {/* Sidebar */}
@@ -451,6 +644,7 @@ export default function App() {
           unreceivedCount={unreceivedInvoicesCount}
           dueTodayCount={dueTodayChecksCount}
           onResetSeedData={handleResetSeedData}
+          onOpenSettings={() => setIsSettingsModalOpen(true)}
         />
 
         {/* Main Content Area */}
@@ -548,6 +742,22 @@ export default function App() {
               onSelectCustomer={(customerId) => {
                 setActiveTab('checks');
               }}
+              onCashCheck={handleCashCheck}
+              onPreviewImage={(url, title) => setPreviewImage({ url, title })}
+              onAddCheckForCustomer={(cust) => {
+                setCheckToEdit({
+                  customerId: cust.id,
+                  customerName: cust.name,
+                } as any);
+                setIsCheckModalOpen(true);
+              }}
+              onAddInvoiceForCustomer={(cust) => {
+                setCustomerInvoiceToEdit({
+                  customerId: cust.id,
+                  customerName: cust.name,
+                } as any);
+                setIsCustomerInvoiceModalOpen(true);
+              }}
             />
           )}
 
@@ -627,7 +837,7 @@ export default function App() {
         hasBrowserPermission={hasBrowserPermission}
       />
 
-      {/* Google Sheets Sync Modal */}
+      {/* Google Sheets Direct Sync Modal */}
       <GoogleSheetsModal
         isOpen={isGoogleSheetsModalOpen}
         onClose={() => setIsGoogleSheetsModalOpen(false)}
@@ -637,6 +847,19 @@ export default function App() {
           customers,
           checks,
           customerInvoices,
+          receivedInvoices,
+        }}
+      />
+
+      {/* Google Apps Script & Database Settings Modal */}
+      <SettingsModal
+        isOpen={isSettingsModalOpen}
+        onClose={() => setIsSettingsModalOpen(false)}
+        onConnectionSuccess={loadData}
+        data={{
+          customers,
+          invoices: customerInvoices,
+          checks,
           receivedInvoices,
         }}
       />

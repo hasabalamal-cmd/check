@@ -32,21 +32,25 @@ export const getDaysDifference = (targetDateStr: string, fromDateStr: string = g
  * Calculate dynamic status for a check based on due date and manual override.
  */
 export const computeCheckStatus = (
-  check: Pick<CheckItem, 'dueDate' | 'manualStatus'>,
+  check: Pick<CheckItem, 'dueDate' | 'manualStatus'> & { status?: string },
   todayStr: string = getTodayString()
 ): CheckStatus => {
-  // If explicitly cashed or cancelled, respect manual choice
-  if (check.manualStatus === 'cashed') return 'cashed';
-  if (check.manualStatus === 'cancelled') return 'cancelled';
+  // If explicitly cashed, paid, or cancelled, respect manual choice
+  if (check.manualStatus === 'cashed' || check.manualStatus === 'مدفوع' || check.status === 'مدفوع' || check.status === 'cashed') {
+    return 'مدفوع';
+  }
+  if (check.manualStatus === 'cancelled' || check.manualStatus === 'ملغي' || check.status === 'ملغي' || check.status === 'cancelled') {
+    return 'ملغي';
+  }
 
   const daysDiff = getDaysDifference(check.dueDate, todayStr);
 
   if (daysDiff < 0) {
-    return 'overdue'; // متأخر
+    return 'متأخر'; // متأخر
   } else if (daysDiff === 0) {
-    return 'due_today'; // مستحق اليوم
+    return 'مستحق اليوم'; // مستحق اليوم
   } else {
-    return 'upcoming'; // قادم
+    return 'قادم'; // قادم
   }
 };
 
@@ -83,7 +87,7 @@ export const formatArabicDate = (dateStr: string): string => {
  * Human readable status labels & styling config in Arabic
  */
 export const CHECK_STATUS_CONFIG: Record<
-  CheckStatus,
+  string,
   {
     label: string;
     bg: string;
@@ -95,7 +99,25 @@ export const CHECK_STATUS_CONFIG: Record<
   }
 > = {
   cashed: {
-    label: 'تم صرفه',
+    label: 'مدفوع',
+    bg: 'bg-emerald-500/10',
+    text: 'text-emerald-400',
+    border: 'border-emerald-500/30',
+    badgeBg: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
+    badgeText: 'text-emerald-400',
+    iconColor: 'text-emerald-400',
+  },
+  مدفوع: {
+    label: 'مدفوع',
+    bg: 'bg-emerald-500/10',
+    text: 'text-emerald-400',
+    border: 'border-emerald-500/30',
+    badgeBg: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
+    badgeText: 'text-emerald-400',
+    iconColor: 'text-emerald-400',
+  },
+  'تم صرفه': {
+    label: 'مدفوع',
     bg: 'bg-emerald-500/10',
     text: 'text-emerald-400',
     border: 'border-emerald-500/30',
@@ -104,6 +126,15 @@ export const CHECK_STATUS_CONFIG: Record<
     iconColor: 'text-emerald-400',
   },
   due_today: {
+    label: 'مستحق اليوم',
+    bg: 'bg-amber-500/15',
+    text: 'text-amber-400',
+    border: 'border-amber-500/40',
+    badgeBg: 'bg-amber-500/25 text-amber-200 border-amber-500/50',
+    badgeText: 'text-amber-400',
+    iconColor: 'text-amber-400',
+  },
+  'مستحق اليوم': {
     label: 'مستحق اليوم',
     bg: 'bg-amber-500/15',
     text: 'text-amber-400',
@@ -121,6 +152,15 @@ export const CHECK_STATUS_CONFIG: Record<
     badgeText: 'text-blue-400',
     iconColor: 'text-blue-400',
   },
+  قادم: {
+    label: 'قادم',
+    bg: 'bg-blue-500/10',
+    text: 'text-blue-400',
+    border: 'border-blue-500/30',
+    badgeBg: 'bg-blue-500/20 text-blue-300 border-blue-500/40',
+    badgeText: 'text-blue-400',
+    iconColor: 'text-blue-400',
+  },
   overdue: {
     label: 'متأخر',
     bg: 'bg-rose-500/15',
@@ -130,7 +170,25 @@ export const CHECK_STATUS_CONFIG: Record<
     badgeText: 'text-rose-400',
     iconColor: 'text-rose-400',
   },
+  متأخر: {
+    label: 'متأخر',
+    bg: 'bg-rose-500/15',
+    text: 'text-rose-400',
+    border: 'border-rose-500/40',
+    badgeBg: 'bg-rose-500/25 text-rose-200 border-rose-500/50',
+    badgeText: 'text-rose-400',
+    iconColor: 'text-rose-400',
+  },
   cancelled: {
+    label: 'ملغي',
+    bg: 'bg-slate-700/40',
+    text: 'text-slate-400',
+    border: 'border-slate-600/30',
+    badgeBg: 'bg-slate-700/50 text-slate-300 border-slate-600/40',
+    badgeText: 'text-slate-400',
+    iconColor: 'text-slate-400',
+  },
+  ملغي: {
     label: 'ملغي',
     bg: 'bg-slate-700/40',
     text: 'text-slate-400',
@@ -157,7 +215,16 @@ export const evaluateCheckNotifications = (
 
   checks.forEach((check) => {
     // Only uncashed and uncancelled checks trigger alerts
-    if (check.manualStatus === 'cashed' || check.manualStatus === 'cancelled') {
+    if (
+      check.manualStatus === 'cashed' ||
+      check.manualStatus === 'مدفوع' ||
+      check.status === 'cashed' ||
+      check.status === 'مدفوع' ||
+      check.manualStatus === 'cancelled' ||
+      check.manualStatus === 'ملغي' ||
+      check.status === 'cancelled' ||
+      check.status === 'ملغي'
+    ) {
       return;
     }
 

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { X, Upload, Calendar, Building2, FileCheck, CheckCircle2, Clock, Image as ImageIcon } from 'lucide-react';
+import { X, Upload, Calendar, Building2, FileCheck, CheckCircle2, Clock, Image as ImageIcon, Loader2 } from 'lucide-react';
 import { ReceivedInvoice, ReceiptStatus } from '../types';
 import { getTodayString } from '../utils/checkCalculations';
+import { isGasConfigured, uploadFileToDriveApi } from '../services/gasApi';
 
 interface ReceivedInvoiceFormModalProps {
   isOpen: boolean;
@@ -21,8 +22,11 @@ export const ReceivedInvoiceFormModal: React.FC<ReceivedInvoiceFormModalProps> =
   const [amount, setAmount] = useState<number | ''>('');
   const [invoiceDate, setInvoiceDate] = useState(getTodayString());
   const [receiptStatus, setReceiptStatus] = useState<ReceiptStatus>('not_received');
+  const [receiptDate, setReceiptDate] = useState('');
   const [notes, setNotes] = useState('');
   const [image, setImage] = useState<string>('');
+  const [isUploading, setIsUploading] = useState(false);
+  const [isDriveUploaded, setIsDriveUploaded] = useState(false);
 
   useEffect(() => {
     if (initialData) {
@@ -30,31 +34,59 @@ export const ReceivedInvoiceFormModal: React.FC<ReceivedInvoiceFormModalProps> =
       setSourceName(initialData.sourceName);
       setAmount(initialData.amount);
       setInvoiceDate(initialData.invoiceDate);
-      setReceiptStatus(initialData.receiptStatus);
+      setReceiptStatus(
+        initialData.receiptStatus === 'received' || initialData.receiptStatus === 'تم الاستلام'
+          ? 'received'
+          : 'not_received'
+      );
+      setReceiptDate(initialData.receiptDate || '');
       setNotes(initialData.notes || '');
       setImage(initialData.image || '');
+      setIsDriveUploaded(Boolean(initialData.image && initialData.image.includes('drive.google.com')));
     } else {
       setInvoiceNumber(`REC-${Math.floor(1000 + Math.random() * 9000)}`);
       setSourceName('');
       setAmount('');
       setInvoiceDate(getTodayString());
       setReceiptStatus('not_received');
+      setReceiptDate('');
       setNotes('');
       setImage('');
+      setIsDriveUploaded(false);
     }
   }, [initialData, isOpen]);
 
   if (!isOpen) return null;
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImage(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+      const base64Data = reader.result as string;
+      setImage(base64Data);
+
+      if (isGasConfigured()) {
+        try {
+          setIsUploading(true);
+          const uploadRes = await uploadFileToDriveApi(
+            base64Data,
+            `rec_${Date.now()}_${file.name}`,
+            file.type || 'image/jpeg'
+          );
+          if (uploadRes?.fileUrl) {
+            setImage(uploadRes.fileUrl);
+            setIsDriveUploaded(true);
+          }
+        } catch (err) {
+          console.warn('Google Drive direct upload skipped or failed, using local file representation', err);
+        } finally {
+          setIsUploading(false);
+        }
+      }
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleUseSampleInvoiceImage = () => {
@@ -74,6 +106,7 @@ export const ReceivedInvoiceFormModal: React.FC<ReceivedInvoiceFormModalProps> =
     </svg>`;
     const dataUrl = `data:image/svg+xml;utf8,${encodeURIComponent(svgInvoice)}`;
     setImage(dataUrl);
+    setIsDriveUploaded(false);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -88,6 +121,7 @@ export const ReceivedInvoiceFormModal: React.FC<ReceivedInvoiceFormModalProps> =
       amount: Number(amount),
       invoiceDate,
       receiptStatus,
+      receiptDate: receiptStatus === 'received' ? (receiptDate || getTodayString()) : '',
       image: image || undefined,
       notes,
     });
@@ -191,17 +225,20 @@ export const ReceivedInvoiceFormModal: React.FC<ReceivedInvoiceFormModalProps> =
           </div>
 
           {/* Receipt Status: strictly manual toggle! */}
-          <div className="p-4 bg-slate-800/80 rounded-xl border border-slate-700">
-            <label className="block text-sm font-semibold text-slate-200 mb-2">
+          <div className="p-4 bg-slate-800/80 rounded-xl border border-slate-700 space-y-3">
+            <label className="block text-sm font-semibold text-slate-200">
               حالة الاستلام <span className="text-emerald-400 text-xs font-normal">(اختيار يدوي فقط)</span>
             </label>
-            <p className="text-xs text-slate-400 mb-3">
+            <p className="text-xs text-slate-400">
               أنت من يحدد حالة الاستلام حصراً، ولا يتم تغييرها تلقائياً.
             </p>
             <div className="grid grid-cols-2 gap-3">
               <button
                 type="button"
-                onClick={() => setReceiptStatus('received')}
+                onClick={() => {
+                  setReceiptStatus('received');
+                  if (!receiptDate) setReceiptDate(getTodayString());
+                }}
                 className={`flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-semibold transition-all border ${
                   receiptStatus === 'received'
                     ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400 shadow-lg shadow-emerald-500/10'
@@ -225,13 +262,39 @@ export const ReceivedInvoiceFormModal: React.FC<ReceivedInvoiceFormModalProps> =
                 <span>لم يتم الاستلام</span>
               </button>
             </div>
+
+            {receiptStatus === 'received' && (
+              <div className="pt-2 border-t border-slate-700/60">
+                <label className="block text-xs text-slate-300 mb-1">تاريخ الاستلام:</label>
+                <input
+                  type="date"
+                  value={receiptDate}
+                  onChange={(e) => setReceiptDate(e.target.value)}
+                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white text-xs font-mono focus:outline-none focus:border-emerald-500"
+                />
+              </div>
+            )}
           </div>
 
           {/* Invoice Image Attachment */}
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-1">
-              صورة أو ملف الفاتورة
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-sm font-medium text-slate-300">
+                صورة أو ملف الفاتورة (Google Drive)
+              </label>
+              {isUploading && (
+                <span className="text-xs text-emerald-400 flex items-center gap-1">
+                  <Loader2 className="w-3 h-3 animate-spin" />
+                  <span>جاري الرفع إلى Google Drive...</span>
+                </span>
+              )}
+              {isDriveUploaded && !isUploading && (
+                <span className="text-xs text-emerald-400 flex items-center gap-1">
+                  <CheckCircle2 className="w-3 h-3" />
+                  <span>تم الرفع إلى Google Drive</span>
+                </span>
+              )}
+            </div>
             <div className="flex flex-col sm:flex-row gap-3 items-center">
               <label className="flex-1 w-full flex items-center justify-center gap-2 px-4 py-3 bg-slate-800 hover:bg-slate-700/80 border border-dashed border-slate-600 rounded-xl cursor-pointer text-slate-300 hover:text-white transition-colors text-sm">
                 <Upload className="w-4 h-4 text-emerald-400" />
@@ -257,7 +320,10 @@ export const ReceivedInvoiceFormModal: React.FC<ReceivedInvoiceFormModalProps> =
                 <img src={image} alt="صورة الفاتورة" className="w-full h-full object-cover" />
                 <button
                   type="button"
-                  onClick={() => setImage('')}
+                  onClick={() => {
+                    setImage('');
+                    setIsDriveUploaded(false);
+                  }}
                   className="absolute top-1 left-1 p-1 bg-rose-600 text-white rounded-full text-xs hover:bg-rose-700"
                 >
                   <X className="w-3 h-3" />

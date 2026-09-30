@@ -40,9 +40,13 @@ export const ReceivedInvoicesView: React.FC<ReceivedInvoicesViewProps> = ({
 
   // Summary Metrics
   const totalAllAmount = invoices.reduce((sum, inv) => sum + inv.amount, 0);
-  const unreceivedInvoices = invoices.filter((inv) => inv.receiptStatus === 'not_received');
+  const unreceivedInvoices = invoices.filter(
+    (inv) => inv.receiptStatus === 'not_received' || inv.receiptStatus === 'لم يتم الاستلام'
+  );
   const totalUnreceivedAmount = unreceivedInvoices.reduce((sum, inv) => sum + inv.amount, 0);
-  const receivedInvoices = invoices.filter((inv) => inv.receiptStatus === 'received');
+  const receivedInvoices = invoices.filter(
+    (inv) => inv.receiptStatus === 'received' || inv.receiptStatus === 'تم الاستلام'
+  );
   const totalReceivedAmount = receivedInvoices.reduce((sum, inv) => sum + inv.amount, 0);
 
   // Filtered list
@@ -57,8 +61,14 @@ export const ReceivedInvoicesView: React.FC<ReceivedInvoicesViewProps> = ({
           if (!matchNumber && !matchSource && !matchNotes) return false;
         }
 
-        if (receiptFilter !== 'all' && inv.receiptStatus !== receiptFilter) {
-          return false;
+        if (receiptFilter === 'received') {
+          if (inv.receiptStatus !== 'received' && inv.receiptStatus !== 'تم الاستلام') {
+            return false;
+          }
+        } else if (receiptFilter === 'not_received') {
+          if (inv.receiptStatus !== 'not_received' && inv.receiptStatus !== 'لم يتم الاستلام') {
+            return false;
+          }
         }
 
         return true;

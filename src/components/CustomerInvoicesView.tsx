@@ -45,7 +45,7 @@ export const CustomerInvoicesView: React.FC<CustomerInvoicesViewProps> = ({
       if (searchTerm.trim()) {
         const term = searchTerm.toLowerCase();
         const matchNumber = inv.invoiceNumber.toLowerCase().includes(term);
-        const matchCustomer = inv.customerName.toLowerCase().includes(term);
+        const matchCustomer = (inv.customerName || '').toLowerCase().includes(term);
         const matchNotes = inv.notes?.toLowerCase().includes(term) || false;
         if (!matchNumber && !matchCustomer && !matchNotes) return false;
       }
@@ -157,11 +157,22 @@ export const CustomerInvoicesView: React.FC<CustomerInvoicesViewProps> = ({
                 className="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-5 flex flex-col justify-between shadow-md"
               >
                 <div>
-                  {/* Top Bar: Invoice Number & Date */}
+                  {/* Top Bar: Invoice Number, Status & Date */}
                   <div className="flex items-center justify-between gap-2 mb-3">
-                    <span className="px-2.5 py-1 rounded-full text-xs font-bold border font-mono tracking-wider bg-slate-900 text-cyan-300 border-cyan-500/30">
-                      {inv.invoiceNumber}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="px-2.5 py-1 rounded-full text-xs font-bold border font-mono tracking-wider bg-slate-900 text-cyan-300 border-cyan-500/30">
+                        {inv.invoiceNumber}
+                      </span>
+                      {inv.receiptStatus === 'مستلم' || inv.receiptStatus === 'received' ? (
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 border border-emerald-500/30 text-emerald-400">
+                          مستلمة
+                        </span>
+                      ) : (
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 border border-amber-500/30 text-amber-400">
+                          مستحقة
+                        </span>
+                      )}
+                    </div>
                     <span className="text-xs text-slate-400">
                       {formatArabicDate(inv.invoiceDate)}
                     </span>

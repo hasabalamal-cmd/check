@@ -45,32 +45,44 @@ export const Dashboard: React.FC<DashboardProps> = ({
   onPreviewImage,
 }) => {
   // 1. Unreceived Invoices Stats (الفواتير غير المستلمة)
-  const unreceivedInvoices = receivedInvoices.filter((inv) => inv.receiptStatus === 'not_received');
+  const unreceivedInvoices = receivedInvoices.filter(
+    (inv) => inv.receiptStatus === 'not_received' || inv.receiptStatus === 'لم يتم الاستلام'
+  );
   const totalUnreceivedAmount = unreceivedInvoices.reduce((sum, inv) => sum + inv.amount, 0);
   const countUnreceivedInvoices = unreceivedInvoices.length;
 
   // 2. Received Invoices Stats (الفواتير المستلمة)
-  const receivedInvoicesList = receivedInvoices.filter((inv) => inv.receiptStatus === 'received');
+  const receivedInvoicesList = receivedInvoices.filter(
+    (inv) => inv.receiptStatus === 'received' || inv.receiptStatus === 'تم الاستلام'
+  );
   const totalReceivedAmount = receivedInvoicesList.reduce((sum, inv) => sum + inv.amount, 0);
   const countReceivedInvoices = receivedInvoicesList.length;
 
   // 3. Upcoming Checks (الشيكات القادمة)
-  const upcomingChecks = checks.filter((c) => c.status === 'upcoming');
+  const upcomingChecks = checks.filter(
+    (c) => c.status === 'upcoming' || c.status === 'قادم'
+  );
   const totalUpcomingChecksAmount = upcomingChecks.reduce((sum, c) => sum + c.amount, 0);
   const countUpcomingChecks = upcomingChecks.length;
 
   // 4. Due Today Checks (الشيكات المستحقة اليوم)
-  const dueTodayChecks = checks.filter((c) => c.status === 'due_today');
+  const dueTodayChecks = checks.filter(
+    (c) => c.status === 'due_today' || c.status === 'مستحق اليوم'
+  );
   const totalDueTodayAmount = dueTodayChecks.reduce((sum, c) => sum + c.amount, 0);
   const countDueTodayChecks = dueTodayChecks.length;
 
   // 5. Overdue Checks (الشيكات المتأخرة)
-  const overdueChecks = checks.filter((c) => c.status === 'overdue');
+  const overdueChecks = checks.filter(
+    (c) => c.status === 'overdue' || c.status === 'متأخر'
+  );
   const totalOverdueAmount = overdueChecks.reduce((sum, c) => sum + c.amount, 0);
   const countOverdueChecks = overdueChecks.length;
 
   // 6. Cashed Checks (تم صرفه)
-  const cashedChecks = checks.filter((c) => c.status === 'cashed');
+  const cashedChecks = checks.filter(
+    (c) => c.status === 'cashed' || c.status === 'تم صرفه' || c.status === 'مدفوع'
+  );
   const totalCashedAmount = cashedChecks.reduce((sum, c) => sum + c.amount, 0);
 
   // Urgent attention needed (due today + overdue)

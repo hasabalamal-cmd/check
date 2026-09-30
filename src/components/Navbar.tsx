@@ -11,6 +11,9 @@ import {
   Sparkles,
   Calendar,
   Layers,
+  Database,
+  RefreshCw,
+  Loader2,
 } from 'lucide-react';
 import { User } from 'firebase/auth';
 
@@ -25,6 +28,10 @@ interface NavbarProps {
   onOpenAddCustomer: () => void;
   activeTab: string;
   onSelectTab: (tab: string) => void;
+  isGasConnected?: boolean;
+  isLoadingGas?: boolean;
+  onOpenSettings?: () => void;
+  onRefreshGasData?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -36,6 +43,10 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenAddReceivedInvoice,
   onOpenAddCustomerInvoice,
   onOpenAddCustomer,
+  isGasConnected,
+  isLoadingGas,
+  onOpenSettings,
+  onRefreshGasData,
 }) => {
   const [showAddMenu, setShowAddMenu] = useState(false);
 
@@ -65,10 +76,39 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
         </div>
 
-        {/* Current Date Badge */}
-        <div className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-slate-800/80 rounded-xl border border-slate-700/60 text-xs text-slate-300">
-          <Calendar className="w-3.5 h-3.5 text-emerald-400" />
-          <span>{todayArabic}</span>
+        {/* Current Date & Cloud Status Badge */}
+        <div className="hidden md:flex items-center gap-2">
+          {onOpenSettings && (
+            <button
+              onClick={onOpenSettings}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs transition-colors ${
+                isGasConnected
+                  ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/20'
+                  : 'bg-amber-500/10 border-amber-500/30 text-amber-300 hover:bg-amber-500/20'
+              }`}
+              title="إعدادات قاعدة بيانات Google Sheets"
+            >
+              <Database className="w-3.5 h-3.5" />
+              <span>{isGasConnected ? 'قاعدة بيانات Google Sheets' : 'ربط Google Sheets'}</span>
+              <span className={`w-2 h-2 rounded-full ${isGasConnected ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
+            </button>
+          )}
+
+          {onRefreshGasData && isGasConnected && (
+            <button
+              onClick={onRefreshGasData}
+              disabled={isLoadingGas}
+              className="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl border border-slate-700 transition-colors disabled:opacity-50"
+              title="تحديث البيانات من Google Sheets"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isLoadingGas ? 'animate-spin text-emerald-400' : ''}`} />
+            </button>
+          )}
+
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-800/80 rounded-xl border border-slate-700/60 text-xs text-slate-300">
+            <Calendar className="w-3.5 h-3.5 text-emerald-400" />
+            <span>{todayArabic}</span>
+          </div>
         </div>
 
         {/* Action Controls */}
