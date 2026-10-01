@@ -117,22 +117,20 @@ export const login = async (
   }
 };
 
-export const logout = async () => {
+export const logout = () => {
   const session = getCurrentSession();
-  if (session && getGasApiUrl()) {
-    try {
-      await fetch(getGasApiUrl(), {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({ action: 'logout', sessionToken: session.token }),
-      });
-    } finally {
-      setCurrentSession(null);
-      window.dispatchEvent(new CustomEvent('sanad:session-expired'));
-    }
-    return;
-  }
   setCurrentSession(null);
+
+  if (session && getGasApiUrl()) {
+    void fetch(getGasApiUrl(), {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'logout', sessionToken: session.token }),
+      keepalive: true,
+    }).catch((error) => {
+      console.warn('Unable to revoke the server session during logout:', error);
+    });
+  }
 };
 
 /**

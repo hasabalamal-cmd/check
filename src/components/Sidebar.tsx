@@ -102,31 +102,31 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Sidebar Content (Desktop Sticky + Mobile Drawer) */}
       <aside
-        className={`fixed lg:sticky top-0 lg:top-16 z-50 lg:z-10 h-screen lg:h-[calc(100vh-4rem)] w-72 lg:w-64 bg-slate-900 border-l border-slate-800 p-4 flex flex-col justify-between shrink-0 transition-transform duration-300 ease-in-out shadow-2xl lg:shadow-none ${
+        className={`fixed lg:sticky top-0 lg:top-16 z-50 lg:z-10 h-screen lg:h-[calc(100vh-4rem)] w-72 lg:w-64 bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 p-4 flex flex-col justify-between shrink-0 transition-transform duration-300 ease-in-out shadow-2xl lg:shadow-none ${
           isMobileOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'
         }`}
       >
         <div className="space-y-3">
           {/* Mobile Drawer Header */}
-          <div className="lg:hidden flex items-center justify-between pb-3 border-b border-slate-800">
+          <div className="lg:hidden flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-emerald-600 to-teal-500 text-white font-black flex items-center justify-center text-sm shadow-xs">
                 {currentShopName.charAt(0)}
               </div>
-              <span className="font-bold text-white text-sm truncate max-w-[170px]">
+              <span className="font-bold text-slate-900 dark:text-white text-sm truncate max-w-[170px]">
                 {currentShopName}
               </span>
             </div>
             <button
               onClick={onCloseMobile}
-              className="p-1.5 text-slate-400 hover:text-white bg-slate-800 rounded-lg cursor-pointer"
+              className="p-1.5 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white bg-slate-100 dark:bg-slate-800 rounded-lg cursor-pointer"
               aria-label="إغلاق القائمة"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
 
-          <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider px-3">
+          <div className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider px-3">
             الأقسام المالية
           </div>
 
@@ -141,7 +141,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
                     isActive
                       ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/25'
-                      : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                      : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'
                   }`}
                 >
                   <div className="flex items-center gap-3">
@@ -174,14 +174,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <span>الإعدادات وإدارة المحلات</span>
             </button>
           )}
-          <div className="text-[10px] text-center text-slate-500">
+          <div className="text-[10px] text-center text-slate-500 dark:text-slate-500">
             {currentShopName} • نظام مالي متعدد المحلات
           </div>
         </div>
       </aside>
 
       {/* Mobile Bottom Navigation Bar */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur-2xl border-t border-slate-800/90 px-1.5 py-1 safe-pb flex items-center justify-around shadow-2xl">
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl border-t border-slate-200/90 dark:border-slate-800/90 px-1.5 py-1 safe-pb flex items-center justify-around shadow-2xl">
         {menuItems.map((item) => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;

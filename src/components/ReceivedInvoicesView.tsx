@@ -118,12 +118,12 @@ export const ReceivedInvoicesView: React.FC<ReceivedInvoicesViewProps> = ({
         {/* Unreceived summary */}
         <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-amber-500/30 shadow-xs flex items-center justify-between">
           <div>
-            <div className="text-xs text-amber-700 dark:text-amber-400 font-medium">لم يتم الاستلام</div>
+            <div className="text-xs text-amber-700 dark:text-amber-400 font-medium">إجمالي الفواتير غير المستلمة</div>
             <div className="text-xl sm:text-2xl font-black text-amber-600 dark:text-amber-300 font-mono mt-1">
               {formatCurrency(totalUnreceivedAmount)}
             </div>
             <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-              {unreceivedInvoices.length} فواتير معلقة
+              {unreceivedInvoices.length} فاتورة غير مستلمة
             </div>
           </div>
           <div className="p-3 bg-amber-500/15 text-amber-600 dark:text-amber-400 rounded-xl">
@@ -134,12 +134,12 @@ export const ReceivedInvoicesView: React.FC<ReceivedInvoicesViewProps> = ({
         {/* Received summary */}
         <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-emerald-500/30 shadow-xs flex items-center justify-between">
           <div>
-            <div className="text-xs text-emerald-700 dark:text-emerald-400 font-medium">تم الاستلام</div>
+            <div className="text-xs text-emerald-700 dark:text-emerald-400 font-medium">إجمالي الفواتير المستلمة</div>
             <div className="text-xl sm:text-2xl font-black text-emerald-600 dark:text-emerald-400 font-mono mt-1">
               {formatCurrency(totalReceivedAmount)}
             </div>
             <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-              {receivedInvoices.length} فواتير مستلمة
+              {receivedInvoices.length} فاتورة مستلمة
             </div>
           </div>
           <div className="p-3 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 rounded-xl">
@@ -150,7 +150,7 @@ export const ReceivedInvoicesView: React.FC<ReceivedInvoicesViewProps> = ({
         {/* Total sum */}
         <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs flex items-center justify-between">
           <div>
-            <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">إجمالي الفواتير المسجلة</div>
+            <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">إجمالي قيمة جميع الفواتير</div>
             <div className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white font-mono mt-1">
               {formatCurrency(totalAllAmount)}
             </div>

@@ -85,8 +85,16 @@ export default function App() {
   const [notifications, setNotifications] = useState<AlertNotification[]>([]);
 
   // Navigation State
-  const [activeTab, setActiveTab] = useState<string>('dashboard');
+  const [activeTab, setActiveTab] = useState<string>(() => {
+    const savedTab = localStorage.getItem('sanad_active_tab');
+    const availableTabs = ['dashboard', 'checks', 'received_invoices', 'customer_invoices', 'customers', 'automation'];
+    return savedTab && availableTabs.includes(savedTab) ? savedTab : 'dashboard';
+  });
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    localStorage.setItem('sanad_active_tab', activeTab);
+  }, [activeTab]);
 
   // Browser Notification Permission
   const [hasBrowserPermission, setHasBrowserPermission] = useState<boolean>(false);
@@ -697,8 +705,8 @@ export default function App() {
   };
 
   // Logout Handler
-  const handleLogout = async () => {
-    await logout();
+  const handleLogout = () => {
+    void logout();
     setSession(null);
     setShops([]);
     setCustomers([]);
@@ -706,6 +714,7 @@ export default function App() {
     setCustomerInvoices([]);
     setReceivedInvoices([]);
     setNotifications([]);
+    window.location.reload();
   };
 
   // Login Success Handler
