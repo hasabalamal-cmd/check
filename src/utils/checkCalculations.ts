@@ -55,14 +55,14 @@ export const computeCheckStatus = (
 };
 
 /**
- * Format currency in Saudi Riyal
+ * Format currency in US Dollar ($) with professional number formatting
  */
 export const formatCurrency = (amount: number): string => {
-  return new Intl.NumberFormat('ar-SA', {
-    style: 'decimal',
+  const num = typeof amount === 'number' && !isNaN(amount) ? amount : 0;
+  return '$' + new Intl.NumberFormat('en-US', {
+    minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-    minimumFractionDigits: 0,
-  }).format(amount) + ' ر.س';
+  }).format(num);
 };
 
 /**
@@ -100,102 +100,102 @@ export const CHECK_STATUS_CONFIG: Record<
 > = {
   cashed: {
     label: 'مدفوع',
-    bg: 'bg-emerald-500/10',
-    text: 'text-emerald-400',
-    border: 'border-emerald-500/30',
-    badgeBg: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
-    badgeText: 'text-emerald-400',
-    iconColor: 'text-emerald-400',
+    bg: 'bg-emerald-50 dark:bg-emerald-500/10',
+    text: 'text-emerald-700 dark:text-emerald-400',
+    border: 'border-emerald-200 dark:border-emerald-500/30',
+    badgeBg: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300 border-emerald-300 dark:border-emerald-500/40',
+    badgeText: 'text-emerald-700 dark:text-emerald-400',
+    iconColor: 'text-emerald-600 dark:text-emerald-400',
   },
   مدفوع: {
     label: 'مدفوع',
-    bg: 'bg-emerald-500/10',
-    text: 'text-emerald-400',
-    border: 'border-emerald-500/30',
-    badgeBg: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
-    badgeText: 'text-emerald-400',
-    iconColor: 'text-emerald-400',
+    bg: 'bg-emerald-50 dark:bg-emerald-500/10',
+    text: 'text-emerald-700 dark:text-emerald-400',
+    border: 'border-emerald-200 dark:border-emerald-500/30',
+    badgeBg: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300 border-emerald-300 dark:border-emerald-500/40',
+    badgeText: 'text-emerald-700 dark:text-emerald-400',
+    iconColor: 'text-emerald-600 dark:text-emerald-400',
   },
   'تم صرفه': {
     label: 'مدفوع',
-    bg: 'bg-emerald-500/10',
-    text: 'text-emerald-400',
-    border: 'border-emerald-500/30',
-    badgeBg: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
-    badgeText: 'text-emerald-400',
-    iconColor: 'text-emerald-400',
+    bg: 'bg-emerald-50 dark:bg-emerald-500/10',
+    text: 'text-emerald-700 dark:text-emerald-400',
+    border: 'border-emerald-200 dark:border-emerald-500/30',
+    badgeBg: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300 border-emerald-300 dark:border-emerald-500/40',
+    badgeText: 'text-emerald-700 dark:text-emerald-400',
+    iconColor: 'text-emerald-600 dark:text-emerald-400',
   },
   due_today: {
     label: 'مستحق اليوم',
-    bg: 'bg-amber-500/15',
-    text: 'text-amber-400',
-    border: 'border-amber-500/40',
-    badgeBg: 'bg-amber-500/25 text-amber-200 border-amber-500/50',
-    badgeText: 'text-amber-400',
-    iconColor: 'text-amber-400',
+    bg: 'bg-amber-50 dark:bg-amber-500/15',
+    text: 'text-amber-800 dark:text-amber-400',
+    border: 'border-amber-200 dark:border-amber-500/40',
+    badgeBg: 'bg-amber-100 text-amber-800 dark:bg-amber-500/25 dark:text-amber-200 border-amber-300 dark:border-amber-500/50',
+    badgeText: 'text-amber-700 dark:text-amber-400',
+    iconColor: 'text-amber-600 dark:text-amber-400',
   },
   'مستحق اليوم': {
     label: 'مستحق اليوم',
-    bg: 'bg-amber-500/15',
-    text: 'text-amber-400',
-    border: 'border-amber-500/40',
-    badgeBg: 'bg-amber-500/25 text-amber-200 border-amber-500/50',
-    badgeText: 'text-amber-400',
-    iconColor: 'text-amber-400',
+    bg: 'bg-amber-50 dark:bg-amber-500/15',
+    text: 'text-amber-800 dark:text-amber-400',
+    border: 'border-amber-200 dark:border-amber-500/40',
+    badgeBg: 'bg-amber-100 text-amber-800 dark:bg-amber-500/25 dark:text-amber-200 border-amber-300 dark:border-amber-500/50',
+    badgeText: 'text-amber-700 dark:text-amber-400',
+    iconColor: 'text-amber-600 dark:text-amber-400',
   },
   upcoming: {
     label: 'قادم',
-    bg: 'bg-blue-500/10',
-    text: 'text-blue-400',
-    border: 'border-blue-500/30',
-    badgeBg: 'bg-blue-500/20 text-blue-300 border-blue-500/40',
-    badgeText: 'text-blue-400',
-    iconColor: 'text-blue-400',
+    bg: 'bg-blue-50 dark:bg-blue-500/10',
+    text: 'text-blue-700 dark:text-blue-400',
+    border: 'border-blue-200 dark:border-blue-500/30',
+    badgeBg: 'bg-blue-100 text-blue-800 dark:bg-blue-500/20 dark:text-blue-300 border-blue-300 dark:border-blue-500/40',
+    badgeText: 'text-blue-700 dark:text-blue-400',
+    iconColor: 'text-blue-600 dark:text-blue-400',
   },
   قادم: {
     label: 'قادم',
-    bg: 'bg-blue-500/10',
-    text: 'text-blue-400',
-    border: 'border-blue-500/30',
-    badgeBg: 'bg-blue-500/20 text-blue-300 border-blue-500/40',
-    badgeText: 'text-blue-400',
-    iconColor: 'text-blue-400',
+    bg: 'bg-blue-50 dark:bg-blue-500/10',
+    text: 'text-blue-700 dark:text-blue-400',
+    border: 'border-blue-200 dark:border-blue-500/30',
+    badgeBg: 'bg-blue-100 text-blue-800 dark:bg-blue-500/20 dark:text-blue-300 border-blue-300 dark:border-blue-500/40',
+    badgeText: 'text-blue-700 dark:text-blue-400',
+    iconColor: 'text-blue-600 dark:text-blue-400',
   },
   overdue: {
     label: 'متأخر',
-    bg: 'bg-rose-500/15',
-    text: 'text-rose-400',
-    border: 'border-rose-500/40',
-    badgeBg: 'bg-rose-500/25 text-rose-200 border-rose-500/50',
-    badgeText: 'text-rose-400',
-    iconColor: 'text-rose-400',
+    bg: 'bg-rose-50 dark:bg-rose-500/15',
+    text: 'text-rose-700 dark:text-rose-400',
+    border: 'border-rose-200 dark:border-rose-500/40',
+    badgeBg: 'bg-rose-100 text-rose-800 dark:bg-rose-500/25 dark:text-rose-200 border-rose-300 dark:border-rose-500/50',
+    badgeText: 'text-rose-700 dark:text-rose-400',
+    iconColor: 'text-rose-600 dark:text-rose-400',
   },
   متأخر: {
     label: 'متأخر',
-    bg: 'bg-rose-500/15',
-    text: 'text-rose-400',
-    border: 'border-rose-500/40',
-    badgeBg: 'bg-rose-500/25 text-rose-200 border-rose-500/50',
-    badgeText: 'text-rose-400',
-    iconColor: 'text-rose-400',
+    bg: 'bg-rose-50 dark:bg-rose-500/15',
+    text: 'text-rose-700 dark:text-rose-400',
+    border: 'border-rose-200 dark:border-rose-500/40',
+    badgeBg: 'bg-rose-100 text-rose-800 dark:bg-rose-500/25 dark:text-rose-200 border-rose-300 dark:border-rose-500/50',
+    badgeText: 'text-rose-700 dark:text-rose-400',
+    iconColor: 'text-rose-600 dark:text-rose-400',
   },
   cancelled: {
     label: 'ملغي',
-    bg: 'bg-slate-700/40',
-    text: 'text-slate-400',
-    border: 'border-slate-600/30',
-    badgeBg: 'bg-slate-700/50 text-slate-300 border-slate-600/40',
-    badgeText: 'text-slate-400',
-    iconColor: 'text-slate-400',
+    bg: 'bg-slate-100 dark:bg-slate-800/50',
+    text: 'text-slate-600 dark:text-slate-400',
+    border: 'border-slate-200 dark:border-slate-700/50',
+    badgeBg: 'bg-slate-200 text-slate-800 dark:bg-slate-700/50 dark:text-slate-300 border-slate-300 dark:border-slate-600/40',
+    badgeText: 'text-slate-600 dark:text-slate-400',
+    iconColor: 'text-slate-500 dark:text-slate-400',
   },
   ملغي: {
     label: 'ملغي',
-    bg: 'bg-slate-700/40',
-    text: 'text-slate-400',
-    border: 'border-slate-600/30',
-    badgeBg: 'bg-slate-700/50 text-slate-300 border-slate-600/40',
-    badgeText: 'text-slate-400',
-    iconColor: 'text-slate-400',
+    bg: 'bg-slate-100 dark:bg-slate-800/50',
+    text: 'text-slate-600 dark:text-slate-400',
+    border: 'border-slate-200 dark:border-slate-700/50',
+    badgeBg: 'bg-slate-200 text-slate-800 dark:bg-slate-700/50 dark:text-slate-300 border-slate-300 dark:border-slate-600/40',
+    badgeText: 'text-slate-600 dark:text-slate-400',
+    iconColor: 'text-slate-500 dark:text-slate-400',
   },
 };
 
@@ -270,5 +270,37 @@ export const evaluateCheckNotifications = (
     }
   });
 
-  return alerts;
+  return sortAlertsByClosest(alerts);
 };
+
+/**
+ * Sort notifications so the closest / most urgent alert appears first
+ * Priority order:
+ * 1. Due Today (daysRemaining === 0)
+ * 2. Overdue (daysRemaining < 0) - urgent past due
+ * 3. In 1 day (daysRemaining === 1)
+ * 4. In 3 days (daysRemaining === 3)
+ * 5. In 7 days (daysRemaining === 7)
+ */
+export const sortAlertsByClosest = (alerts: AlertNotification[]): AlertNotification[] => {
+  return [...alerts].sort((a, b) => {
+    const getUrgencyScore = (item: AlertNotification) => {
+      // 0 = Due today (immediate top urgency)
+      if (item.daysRemaining === 0) return 0;
+      // Overdue is past due - urgent! (score between 0.01 and 0.99 so today is first, overdue next, or overdue first)
+      if (item.daysRemaining < 0) return 0.05 + Math.abs(item.daysRemaining) * 0.01;
+      // Upcoming: 1 day (score 1), 3 days (score 3), 7 days (score 7)
+      return item.daysRemaining;
+    };
+
+    const diff = getUrgencyScore(a) - getUrgencyScore(b);
+    if (diff !== 0) return diff;
+
+    // Unread first if same urgency
+    if (a.isRead !== b.isRead) return a.isRead ? 1 : -1;
+
+    // Latest created timestamp first
+    return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+  });
+};
+

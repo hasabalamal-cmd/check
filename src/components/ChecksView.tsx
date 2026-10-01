@@ -121,14 +121,14 @@ export const ChecksView: React.FC<ChecksViewProps> = ({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <div className="p-2 bg-blue-500/10 text-blue-400 rounded-xl">
+            <div className="p-2 bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-xl">
               <CreditCard className="w-6 h-6" />
             </div>
             <div>
-              <h1 className="text-xl sm:text-2xl font-bold text-white">
+              <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
                 الشيكات الصادرة من العملاء
               </h1>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-slate-500 dark:text-slate-400">
                 تسجيل ومتابعة شيكات المحلات وتواريخ الصرف التلقائية والفواتير المرتبطة
               </p>
             </div>
@@ -137,7 +137,7 @@ export const ChecksView: React.FC<ChecksViewProps> = ({
 
         <button
           onClick={onAddCheck}
-          className="px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-sm font-semibold flex items-center justify-center gap-2 shadow-lg shadow-blue-600/30 transition-all active:scale-95 self-start sm:self-auto"
+          className="px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 shadow-md shadow-blue-600/25 transition-all active:scale-95 self-start sm:self-auto cursor-pointer"
         >
           <Plus className="w-4 h-4" />
           <span>تسجيل شيك جديد</span>
@@ -145,7 +145,7 @@ export const ChecksView: React.FC<ChecksViewProps> = ({
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="bg-slate-800/80 border border-slate-700/70 rounded-2xl p-4 shadow-md space-y-3">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-xs space-y-3">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
           {/* Search box */}
           <div className="relative">
@@ -155,7 +155,7 @@ export const ChecksView: React.FC<ChecksViewProps> = ({
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="ابحث برقم الشيك، اسم المحل، الفاتورة..."
-              className="w-full bg-slate-900 border border-slate-700 rounded-xl pr-9 pl-3 py-2 text-white text-xs sm:text-sm focus:outline-none focus:border-blue-500 placeholder:text-slate-500"
+              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl pr-9 pl-3 py-2 text-slate-900 dark:text-white text-xs sm:text-sm focus:outline-none focus:border-blue-500 placeholder:text-slate-400"
             />
           </div>
 
@@ -164,7 +164,7 @@ export const ChecksView: React.FC<ChecksViewProps> = ({
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white text-xs sm:text-sm focus:outline-none focus:border-blue-500"
+              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-900 dark:text-white text-xs sm:text-sm focus:outline-none focus:border-blue-500"
             >
               <option value="all">كل حالات الشيكات ({checks.length})</option>
               <option value="upcoming">قادم</option>
@@ -180,7 +180,7 @@ export const ChecksView: React.FC<ChecksViewProps> = ({
             <select
               value={customerFilter}
               onChange={(e) => setCustomerFilter(e.target.value)}
-              className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white text-xs sm:text-sm focus:outline-none focus:border-blue-500"
+              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-900 dark:text-white text-xs sm:text-sm focus:outline-none focus:border-blue-500"
             >
               <option value="all">جميع المحلات والعملاء</option>
               {customers.map((c) => (
@@ -196,7 +196,7 @@ export const ChecksView: React.FC<ChecksViewProps> = ({
             <select
               value={dateRange}
               onChange={(e) => setDateRange(e.target.value as any)}
-              className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white text-xs sm:text-sm focus:outline-none focus:border-blue-500"
+              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-900 dark:text-white text-xs sm:text-sm focus:outline-none focus:border-blue-500"
             >
               <option value="all">كل التواريخ</option>
               <option value="today">مستحق اليوم فقط</option>
@@ -207,9 +207,9 @@ export const ChecksView: React.FC<ChecksViewProps> = ({
         </div>
 
         {/* Status badges quick toggle */}
-        <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-700/60 text-xs">
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-200 dark:border-slate-800 text-xs">
           <div className="flex flex-wrap items-center gap-1.5">
-            <span className="text-slate-400 text-xs ml-1">تصفية سريعة:</span>
+            <span className="text-slate-500 dark:text-slate-400 text-xs ml-1">تصفية سريعة:</span>
             {(['all', 'upcoming', 'due_today', 'overdue', 'cashed', 'cancelled'] as const).map((st) => {
               const label =
                 st === 'all'
@@ -231,10 +231,10 @@ export const ChecksView: React.FC<ChecksViewProps> = ({
                 <button
                   key={st}
                   onClick={() => setStatusFilter(st)}
-                  className={`px-2.5 py-1 rounded-lg font-medium transition-all ${
+                  className={`px-2.5 py-1 rounded-lg font-medium transition-all cursor-pointer ${
                     statusFilter === st
-                      ? 'bg-blue-600 text-white font-bold shadow'
-                      : 'bg-slate-900 text-slate-400 hover:text-slate-200'
+                      ? 'bg-blue-600 text-white font-bold shadow-xs'
+                      : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300'
                   }`}
                 >
                   {label} ({count})
@@ -243,9 +243,9 @@ export const ChecksView: React.FC<ChecksViewProps> = ({
             })}
           </div>
 
-          <div className="text-slate-300 font-medium">
+          <div className="text-slate-600 dark:text-slate-300 font-medium">
             الإجمالي في العرض:{' '}
-            <span className="text-emerald-400 font-bold font-mono">
+            <span className="text-emerald-600 dark:text-emerald-400 font-bold font-mono">
               {formatCurrency(totalFilteredAmount)}
             </span>
           </div>
@@ -254,13 +254,13 @@ export const ChecksView: React.FC<ChecksViewProps> = ({
 
       {/* Checks Grid / Table */}
       {filteredChecks.length === 0 ? (
-        <div className="bg-slate-800/40 border border-slate-700/60 rounded-2xl p-12 text-center space-y-3">
-          <CreditCard className="w-12 h-12 mx-auto text-slate-500" />
-          <h3 className="text-base font-bold text-slate-300">لا توجد شيكات مطابقة لمعايير البحث</h3>
-          <p className="text-xs text-slate-500">جرب تعديل الفلاتر أو تسجيل شيك جديد.</p>
+        <div className="bg-white dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-12 text-center space-y-3 shadow-xs">
+          <CreditCard className="w-12 h-12 mx-auto text-slate-400 dark:text-slate-500" />
+          <h3 className="text-base font-bold text-slate-800 dark:text-slate-300">لا توجد شيكات مطابقة لمعايير البحث</h3>
+          <p className="text-xs text-slate-500 dark:text-slate-400">جرب تعديل الفلاتر أو تسجيل شيك جديد.</p>
           <button
             onClick={onAddCheck}
-            className="px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-semibold"
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-semibold shadow-xs"
           >
             تسجيل شيك الآن
           </button>
@@ -268,26 +268,26 @@ export const ChecksView: React.FC<ChecksViewProps> = ({
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredChecks.map((chk) => {
-            const cfg = CHECK_STATUS_CONFIG[chk.status];
-            const isCashed = chk.status === 'cashed';
+            const cfg = CHECK_STATUS_CONFIG[chk.status] || CHECK_STATUS_CONFIG['قادم'];
+            const isCashed = chk.status === 'cashed' || chk.status === 'مدفوع' || chk.status === 'تم صرفه';
 
             return (
               <div
                 key={chk.id}
-                className={`rounded-2xl border transition-all p-5 flex flex-col justify-between ${
+                className={`rounded-2xl border transition-all p-5 flex flex-col justify-between shadow-xs ${
                   isCashed
-                    ? 'bg-slate-800/50 border-emerald-500/20'
-                    : chk.status === 'due_today'
-                    ? 'bg-slate-800/90 border-amber-500/50 shadow-lg ring-1 ring-amber-500/30'
-                    : chk.status === 'overdue'
-                    ? 'bg-slate-800/90 border-rose-500/40 shadow-lg ring-1 ring-rose-500/30'
-                    : 'bg-slate-800/80 border-slate-700/80'
+                    ? 'bg-slate-50/80 dark:bg-slate-800/40 border-emerald-500/20'
+                    : chk.status === 'due_today' || chk.status === 'مستحق اليوم'
+                    ? 'bg-amber-50/30 dark:bg-slate-800/90 border-amber-500/50 shadow-md ring-1 ring-amber-500/30'
+                    : chk.status === 'overdue' || chk.status === 'متأخر'
+                    ? 'bg-rose-50/30 dark:bg-slate-800/90 border-rose-500/40 shadow-md ring-1 ring-rose-500/30'
+                    : 'bg-white dark:bg-slate-800/80 border-slate-200 dark:border-slate-700/80'
                 }`}
               >
                 <div>
                   {/* Top Bar: Status & Check Number */}
                   <div className="flex items-center justify-between gap-2 mb-3">
-                    <span className="px-2.5 py-1 rounded-full text-xs font-bold border font-mono tracking-wider bg-slate-900 text-slate-300 border-slate-700">
+                    <span className="px-2.5 py-1 rounded-full text-xs font-bold border font-mono tracking-wider bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-200 border-slate-200 dark:border-slate-700">
                       {chk.checkNumber}
                     </span>
                     <span className={`px-2.5 py-1 rounded-full text-xs font-bold border ${cfg.badgeBg}`}>
@@ -297,45 +297,38 @@ export const ChecksView: React.FC<ChecksViewProps> = ({
 
                   {/* Store Name & Amount */}
                   <div className="space-y-1">
-                    <h3 className="font-bold text-white text-base truncate" title={chk.customerName}>
+                    <h3 className="font-bold text-slate-900 dark:text-white text-base truncate" title={chk.customerName}>
                       {chk.customerName}
                     </h3>
-                    <div className="text-2xl font-black text-emerald-400 font-mono">
+                    <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400 font-mono">
                       {formatCurrency(chk.amount)}
                     </div>
                   </div>
 
-                  {/* Metadata: Due Date & Bank */}
-                  <div className="mt-4 pt-3 border-t border-slate-700/60 space-y-1.5 text-xs text-slate-300">
+                  {/* Metadata: Due Date */}
+                  <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-700/60 space-y-1.5 text-xs text-slate-600 dark:text-slate-300">
                     <div className="flex items-center justify-between">
-                      <span className="text-slate-400 flex items-center gap-1">
+                      <span className="text-slate-500 dark:text-slate-400 flex items-center gap-1">
                         <Calendar className="w-3.5 h-3.5" />
                         <span>تاريخ الاستحقاق:</span>
                       </span>
-                      <span className="font-semibold text-white">
+                      <span className="font-semibold text-slate-900 dark:text-white">
                         {formatArabicDate(chk.dueDate)}
                       </span>
                     </div>
 
-                    {chk.bankName && (
-                      <div className="flex items-center justify-between">
-                        <span className="text-slate-400">البنك المسحوب عليه:</span>
-                        <span className="text-slate-200">{chk.bankName}</span>
-                      </div>
-                    )}
-
                     {chk.linkedInvoiceNumber && (
                       <div className="flex items-center justify-between">
-                        <span className="text-slate-400 flex items-center gap-1">
-                          <FileText className="w-3.5 h-3.5 text-blue-400" />
+                        <span className="text-slate-500 dark:text-slate-400 flex items-center gap-1">
+                          <FileText className="w-3.5 h-3.5 text-blue-500" />
                           <span>الفاتورة المرتبطة:</span>
                         </span>
-                        <span className="text-blue-300 font-mono">{chk.linkedInvoiceNumber}</span>
+                        <span className="text-blue-600 dark:text-blue-300 font-mono">{chk.linkedInvoiceNumber}</span>
                       </div>
                     )}
 
                     {chk.notes && (
-                      <p className="text-[11px] text-slate-400 line-clamp-2 mt-1 bg-slate-900/40 p-2 rounded-lg">
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2 mt-1 bg-slate-50 dark:bg-slate-900/40 p-2 rounded-lg border border-slate-100 dark:border-slate-800">
                         {chk.notes}
                       </p>
                     )}
@@ -343,12 +336,12 @@ export const ChecksView: React.FC<ChecksViewProps> = ({
                 </div>
 
                 {/* Bottom Actions Bar */}
-                <div className="mt-5 pt-3 border-t border-slate-700/60 flex items-center justify-between gap-2">
+                <div className="mt-5 pt-3 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between gap-2">
                   <div className="flex items-center gap-1">
                     {chk.image && (
                       <button
                         onClick={() => onPreviewImage(chk.image!, `صورة شيك ${chk.checkNumber}`)}
-                        className="p-2 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-xl transition-colors text-xs flex items-center gap-1"
+                        className="p-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-xl transition-colors text-xs flex items-center gap-1 cursor-pointer"
                         title="معاينة صورة الشيك"
                       >
                         <Eye className="w-3.5 h-3.5" />
@@ -357,14 +350,14 @@ export const ChecksView: React.FC<ChecksViewProps> = ({
                     )}
                     <button
                       onClick={() => onEditCheck(chk)}
-                      className="p-2 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-xl transition-colors text-xs"
+                      className="p-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-xl transition-colors text-xs cursor-pointer"
                       title="تعديل الشيك"
                     >
                       <Edit2 className="w-3.5 h-3.5" />
                     </button>
                     <button
                       onClick={() => onDeleteCheck(chk.id)}
-                      className="p-2 bg-slate-700 hover:bg-rose-900/60 text-slate-300 hover:text-rose-300 rounded-xl transition-colors text-xs"
+                      className="p-2 bg-slate-100 hover:bg-rose-100 dark:bg-slate-700 dark:hover:bg-rose-900/60 text-slate-600 hover:text-rose-600 dark:text-slate-300 dark:hover:text-rose-300 rounded-xl transition-colors text-xs cursor-pointer"
                       title="حذف الشيك"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -375,13 +368,13 @@ export const ChecksView: React.FC<ChecksViewProps> = ({
                   {!isCashed ? (
                     <button
                       onClick={() => onCashCheck(chk.id)}
-                      className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-md shadow-emerald-600/20 transition-all active:scale-95"
+                      className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm shadow-emerald-600/20 transition-all active:scale-95 cursor-pointer"
                     >
                       <Check className="w-3.5 h-3.5" />
                       <span>صرف الشيك</span>
                     </button>
                   ) : (
-                    <span className="text-[11px] text-emerald-400 font-semibold flex items-center gap-1">
+                    <span className="text-[11px] text-emerald-700 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-500/10 px-2 py-0.5 rounded-lg border border-emerald-200 dark:border-emerald-500/20 flex items-center gap-1">
                       <Check className="w-3.5 h-3.5" />
                       <span>تم الصرف</span>
                     </span>

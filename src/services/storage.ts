@@ -1,11 +1,18 @@
+/**
+ * Storage Service for Sanad Multi-Tenant App
+ * Manages cache keys isolated by ShopID (e.g. sanad_BUNN_data)
+ * and seed data partitioned by ShopID.
+ */
+
 import { Customer, CheckItem, CustomerInvoice, ReceivedInvoice, AlertNotification } from '../types';
 import { getTodayString, computeCheckStatus } from '../utils/checkCalculations';
+import { getActiveShopId } from './auth';
 
-const CUSTOMERS_KEY = 'sanad_customers_v1';
-const CHECKS_KEY = 'sanad_checks_v1';
-const CUSTOMER_INVOICES_KEY = 'sanad_customer_invoices_v1';
-const RECEIVED_INVOICES_KEY = 'sanad_received_invoices_v1';
-const NOTIFICATIONS_KEY = 'sanad_notifications_v1';
+// Helper to generate shop-isolated storage key
+export const getShopStorageKey = (prefix: string, shopId: string = getActiveShopId()): string => {
+  const safeShopId = (shopId || 'DEFAULT').replace(/[^a-zA-Z0-9_-]/g, '_');
+  return `sanad_${safeShopId}_${prefix}_v2`;
+};
 
 // Calculate relative date offsets in YYYY-MM-DD
 const getDateOffset = (offsetDays: number): string => {
@@ -17,248 +24,310 @@ const getDateOffset = (offsetDays: number): string => {
   return `${y}-${m}-${day}`;
 };
 
-// Initial realistic Arabic seed data
-export const INITIAL_CUSTOMERS: Customer[] = [
+// Realistic Seed Data per Shop
+export const SEED_DATA_MAP: Record<
+  string,
   {
-    id: 'cust-1',
-    name: 'مؤسسة الأمل التجارية',
-    contactPerson: 'أبو فهد العتيبي',
-    phone: '0551234567',
-    address: 'الرياض - حي الملز، طريق صلاح الدين',
-    notes: 'عميل ممتاز وملتزم بالدفعات الشهرية، خصم خاص 5% للبضائع الغذائية',
-    createdAt: '2026-09-01T10:00:00Z',
+    customers: Customer[];
+    invoices: CustomerInvoice[];
+    checks: CheckItem[];
+    receivedInvoices: ReceivedInvoice[];
+  }
+> = {
+  BUNN: {
+    customers: [
+      {
+        id: 'cust-bunn-1',
+        shopId: 'BUNN',
+        name: 'مؤسسة الأمل للضيافة',
+        contactPerson: 'أبو فهد العتيبي',
+        phone: '0551234567',
+        address: 'الرياض - حي الملز',
+        notes: 'توريدات بن ومشروبات ساخنة',
+        createdAt: '2026-09-01T10:00:00Z',
+      },
+      {
+        id: 'cust-bunn-2',
+        shopId: 'BUNN',
+        name: 'كافيه النخبة المتخصص',
+        contactPerson: 'م. طارق الزهراني',
+        phone: '0509876543',
+        address: 'جدة - شارع التحلية',
+        notes: 'شحنات شهرية منتظمة',
+        createdAt: '2026-09-05T11:30:00Z',
+      },
+    ],
+    invoices: [
+      {
+        id: 'inv-bunn-101',
+        shopId: 'BUNN',
+        invoiceNumber: 'BUNN-INV-001',
+        customerId: 'cust-bunn-1',
+        customerName: 'مؤسسة الأمل للضيافة',
+        amount: 4500,
+        invoiceDate: getDateOffset(-8),
+        notes: 'توريد حبوب بن كولومبي وإثيوبي',
+        receiptStatus: 'مستلم',
+        receiptDate: getDateOffset(-6),
+        createdAt: '2026-09-20T08:00:00Z',
+      },
+      {
+        id: 'inv-bunn-102',
+        shopId: 'BUNN',
+        invoiceNumber: 'BUNN-INV-002',
+        customerId: 'cust-bunn-2',
+        customerName: 'كافيه النخبة المتخصص',
+        amount: 8200,
+        invoiceDate: getDateOffset(-3),
+        notes: 'معدات تقطير وبن فاخر',
+        receiptStatus: 'مستحق',
+        createdAt: '2026-09-26T08:00:00Z',
+      },
+    ],
+    checks: [
+      {
+        id: 'chk-bunn-1',
+        shopId: 'BUNN',
+        checkNumber: 'CHK-BN-8801',
+        customerId: 'cust-bunn-1',
+        customerName: 'مؤسسة الأمل للضيافة',
+        amount: 4500,
+        dueDate: getDateOffset(4),
+        linkedInvoiceId: 'inv-bunn-101',
+        linkedInvoiceNumber: 'BUNN-INV-001',
+        status: 'upcoming',
+        notes: 'شيك الدفعة الأولى',
+        createdAt: '2026-09-20T09:00:00Z',
+      },
+      {
+        id: 'chk-bunn-2',
+        shopId: 'BUNN',
+        checkNumber: 'CHK-BN-8802',
+        customerId: 'cust-bunn-2',
+        customerName: 'كافيه النخبة المتخصص',
+        amount: 4100,
+        dueDate: getDateOffset(0), // Today
+        linkedInvoiceId: 'inv-bunn-102',
+        linkedInvoiceNumber: 'BUNN-INV-002',
+        status: 'due_today',
+        notes: 'شيك مستحق اليوم لصالح Bunn',
+        createdAt: '2026-09-26T10:00:00Z',
+      },
+    ],
+    receivedInvoices: [
+      {
+        id: 'rec-bunn-1',
+        shopId: 'BUNN',
+        invoiceNumber: 'SUP-BN-301',
+        sourceName: 'شركة حبوب البن الخضراء العالمية',
+        amount: 12500,
+        invoiceDate: getDateOffset(-12),
+        notes: 'استيراد محاصيل بن مجففة',
+        receiptStatus: 'تم الاستلام',
+        receiptDate: getDateOffset(-10),
+        createdAt: '2026-09-18T10:00:00Z',
+      },
+      {
+        id: 'rec-bunn-2',
+        shopId: 'BUNN',
+        invoiceNumber: 'SUP-BN-302',
+        sourceName: 'مصنع الأكواب والأغلفة الحديثة',
+        amount: 3400,
+        invoiceDate: getDateOffset(-2),
+        notes: 'كراتين أكواب ورقية بشعار Bunn',
+        receiptStatus: 'لم يتم الاستلام',
+        createdAt: '2026-09-27T12:00:00Z',
+      },
+    ],
   },
-  {
-    id: 'cust-2',
-    name: 'شركة الوفاق للتوريدات',
-    contactPerson: 'م. طارق الزهراني',
-    phone: '0509876543',
-    address: 'جدة - حي الصفا، شارع الأربعين',
-    notes: 'استلام البضائع يوم الأحد أسبوعياً، شيكات آجلة 30 يوماً',
-    createdAt: '2026-09-05T11:30:00Z',
+  ABC001: {
+    customers: [
+      {
+        id: 'cust-abc-1',
+        shopId: 'ABC001',
+        name: 'مجموعة التجزئة الحديثة',
+        contactPerson: 'فهد السالم',
+        phone: '0561112233',
+        address: 'الدمام - شارع الملك عبدالعزيز',
+        notes: 'عميل رئيسي في فرع ABC',
+        createdAt: '2026-09-10T10:00:00Z',
+      },
+    ],
+    invoices: [
+      {
+        id: 'inv-abc-1',
+        shopId: 'ABC001',
+        invoiceNumber: 'ABC-INV-901',
+        customerId: 'cust-abc-1',
+        customerName: 'مجموعة التجزئة الحديثة',
+        amount: 15600,
+        invoiceDate: getDateOffset(-5),
+        notes: 'بضائع استهلاكية متفرقة',
+        receiptStatus: 'مستحق',
+        createdAt: '2026-09-24T08:00:00Z',
+      },
+    ],
+    checks: [
+      {
+        id: 'chk-abc-1',
+        shopId: 'ABC001',
+        checkNumber: 'CHK-ABC-551',
+        customerId: 'cust-abc-1',
+        customerName: 'مجموعة التجزئة الحديثة',
+        amount: 15600,
+        dueDate: getDateOffset(7),
+        linkedInvoiceId: 'inv-abc-1',
+        linkedInvoiceNumber: 'ABC-INV-901',
+        status: 'upcoming',
+        notes: 'شيك مؤجل لأمر ABC Store',
+        createdAt: '2026-09-24T09:00:00Z',
+      },
+    ],
+    receivedInvoices: [
+      {
+        id: 'rec-abc-1',
+        shopId: 'ABC001',
+        invoiceNumber: 'REC-ABC-101',
+        sourceName: 'مستودعات الشحن السريع ABC',
+        amount: 6200,
+        invoiceDate: getDateOffset(-4),
+        notes: 'شحنة إلكترونيات وتجهيزات',
+        receiptStatus: 'لم يتم الاستلام',
+        createdAt: '2026-09-25T11:00:00Z',
+      },
+    ],
   },
-  {
-    id: 'cust-3',
-    name: 'سوبرماركت البركة المركزي',
-    contactPerson: 'سلمان الدوسري',
-    phone: '0543322110',
-    address: 'الدمام - حي الشاطئ، تقاطع الملك فهد',
-    notes: 'فرع رئيسي يتعامل بالشيكات المعتمدة',
-    createdAt: '2026-09-10T09:15:00Z',
+  XYZ001: {
+    customers: [
+      {
+        id: 'cust-xyz-1',
+        shopId: 'XYZ001',
+        name: 'أسواق المدينة العالمية',
+        contactPerson: 'عبدالله القحطاني',
+        phone: '0544556677',
+        address: 'مكة المكرمة - العزيزية',
+        notes: 'توريد تموينات دورية',
+        createdAt: '2026-09-15T09:00:00Z',
+      },
+    ],
+    invoices: [
+      {
+        id: 'inv-xyz-1',
+        shopId: 'XYZ001',
+        invoiceNumber: 'XYZ-INV-441',
+        customerId: 'cust-xyz-1',
+        customerName: 'أسواق المدينة العالمية',
+        amount: 19800,
+        invoiceDate: getDateOffset(-6),
+        notes: 'دفعة توريد تموينية أولى لـ XYZ',
+        receiptStatus: 'مستحق',
+        createdAt: '2026-09-23T08:00:00Z',
+      },
+    ],
+    checks: [
+      {
+        id: 'chk-xyz-1',
+        shopId: 'XYZ001',
+        checkNumber: 'CHK-XYZ-102',
+        customerId: 'cust-xyz-1',
+        customerName: 'أسواق المدينة العالمية',
+        amount: 19800,
+        dueDate: getDateOffset(2),
+        linkedInvoiceId: 'inv-xyz-1',
+        linkedInvoiceNumber: 'XYZ-INV-441',
+        status: 'upcoming',
+        notes: 'شيك مؤجل لصالح XYZ Store',
+        createdAt: '2026-09-23T10:00:00Z',
+      },
+    ],
+    receivedInvoices: [
+      {
+        id: 'rec-xyz-1',
+        shopId: 'XYZ001',
+        invoiceNumber: 'REC-XYZ-701',
+        sourceName: 'شركة النقل المبرد اللوجستية',
+        amount: 4800,
+        invoiceDate: getDateOffset(-5),
+        notes: 'أجور نقل برادات للمستودع',
+        receiptStatus: 'تم الاستلام',
+        receiptDate: getDateOffset(-2),
+        createdAt: '2026-09-24T14:00:00Z',
+      },
+    ],
   },
-  {
-    id: 'cust-4',
-    name: 'ركن النخبة للمواد الاستهلاكية',
-    contactPerson: 'خالد المطيري',
-    phone: '0567788990',
-    address: 'المدينة المنورة - حي سلطانة',
-    notes: 'تسليم في المستودع الميداني',
-    createdAt: '2026-09-15T14:20:00Z',
-  },
-];
+};
 
-export const INITIAL_CUSTOMER_INVOICES: CustomerInvoice[] = [
-  {
-    id: 'cinv-101',
-    invoiceNumber: 'INV-2026-089',
-    customerId: 'cust-1',
-    customerName: 'مؤسسة الأمل التجارية',
-    amount: 15000,
-    invoiceDate: getDateOffset(-10),
-    notes: 'توريد دفعة مواد غذائية أولى - شحنة رقم 42',
-    createdAt: '2026-09-19T08:00:00Z',
-  },
-  {
-    id: 'cinv-102',
-    invoiceNumber: 'INV-2026-090',
-    customerId: 'cust-2',
-    customerName: 'شركة الوفاق للتوريدات',
-    amount: 25000,
-    invoiceDate: getDateOffset(-5),
-    notes: 'توريد كراتين زيت وعصائر - معتمدة من الإدارة',
-    createdAt: '2026-09-24T08:00:00Z',
-  },
-  {
-    id: 'cinv-103',
-    invoiceNumber: 'INV-2026-091',
-    customerId: 'cust-3',
-    customerName: 'سوبرماركت البركة المركزي',
-    amount: 18500,
-    invoiceDate: getDateOffset(-2),
-    notes: 'توريد مستلزمات منظفات ومعلبات',
-    createdAt: '2026-09-27T08:00:00Z',
-  },
-  {
-    id: 'cinv-104',
-    invoiceNumber: 'INV-2026-092',
-    customerId: 'cust-4',
-    customerName: 'ركن النخبة للمواد الاستهلاكية',
-    amount: 32000,
-    invoiceDate: getDateOffset(-15),
-    notes: 'شحنة بضائع شاملة للشهر الحالي',
-    createdAt: '2026-09-14T08:00:00Z',
-  },
-];
-
-export const INITIAL_CHECKS: CheckItem[] = [
-  {
-    id: 'chk-1',
-    checkNumber: 'CHK-88421',
-    customerId: 'cust-1',
-    customerName: 'مؤسسة الأمل التجارية',
-    amount: 15000,
-    dueDate: getDateOffset(3), // متبقي 3 أيام (قادم)
-    linkedInvoiceId: 'cinv-101',
-    linkedInvoiceNumber: 'INV-2026-089',
-    bankName: 'مصرف الراجحي',
-    notes: 'شيك مؤجل 3 أيام مقابل فاتورة توريد المواد الغذائية',
-    status: 'upcoming',
-    createdAt: '2026-09-19T09:00:00Z',
-  },
-  {
-    id: 'chk-2',
-    checkNumber: 'CHK-99104',
-    customerId: 'cust-2',
-    customerName: 'شركة الوفاق للتوريدات',
-    amount: 25000,
-    dueDate: getDateOffset(0), // مستحق اليوم!
-    linkedInvoiceId: 'cinv-102',
-    linkedInvoiceNumber: 'INV-2026-090',
-    bankName: 'البنك الأهلي السعودي',
-    notes: 'شيك مستحق اليوم - يرجى إيداعه صباحاً',
-    status: 'due_today',
-    createdAt: '2026-09-24T10:00:00Z',
-  },
-  {
-    id: 'chk-3',
-    checkNumber: 'CHK-77530',
-    customerId: 'cust-4',
-    customerName: 'ركن النخبة للمواد الاستهلاكية',
-    amount: 32000,
-    dueDate: getDateOffset(-4), // متأخر منذ 4 أيام ولم يصرف
-    linkedInvoiceId: 'cinv-104',
-    linkedInvoiceNumber: 'INV-2026-092',
-    bankName: 'بنك الرياض',
-    notes: 'تأخر في الصرف، تم التواصل مع الأخ خالد للمتابعة',
-    status: 'overdue',
-    createdAt: '2026-09-14T11:00:00Z',
-  },
-  {
-    id: 'chk-4',
-    checkNumber: 'CHK-66219',
-    customerId: 'cust-3',
-    customerName: 'سوبرماركت البركة المركزي',
-    amount: 18500,
-    dueDate: getDateOffset(7), // متبقي 7 أيام (قادم)
-    linkedInvoiceId: 'cinv-103',
-    linkedInvoiceNumber: 'INV-2026-091',
-    bankName: 'بنك البلاد',
-    notes: 'شيك قادم خلال أسبوع',
-    status: 'upcoming',
-    createdAt: '2026-09-27T10:00:00Z',
-  },
-  {
-    id: 'chk-5',
-    checkNumber: 'CHK-55102',
-    customerId: 'cust-1',
-    customerName: 'مؤسسة الأمل التجارية',
-    amount: 12000,
-    dueDate: getDateOffset(-12),
-    bankName: 'مصرف الراجحي',
-    notes: 'دفعة سابقة تم إيداعها وصرفها بنجاح',
-    status: 'cashed',
-    manualStatus: 'cashed',
-    cashedDate: getDateOffset(-12),
-    createdAt: '2026-09-10T12:00:00Z',
-  },
-];
-
-// Fulfills the user's exact example:
-// 20,000 ريال - لم يتم الاستلام
-// 15,000 ريال - تم الاستلام
-export const INITIAL_RECEIVED_INVOICES: ReceivedInvoice[] = [
-  {
-    id: 'rinv-1',
-    invoiceNumber: 'REC-3001',
-    sourceName: 'مصنع الشرق للصناعات الغذائية',
-    amount: 20000,
-    invoiceDate: getDateOffset(-3),
-    notes: 'فاتورة توريد كراتين الحليب والعصائر المركزية',
-    receiptStatus: 'not_received', // لم يتم الاستلام
-    createdAt: '2026-09-26T09:00:00Z',
-  },
-  {
-    id: 'rinv-2',
-    invoiceNumber: 'REC-3002',
-    sourceName: 'مجموعة الصافي للتوزيع العام',
-    amount: 15000,
-    invoiceDate: getDateOffset(-7),
-    notes: 'فاتورة مواد تغليف وتعبئة مسبقة الصنع',
-    receiptStatus: 'received', // تم الاستلام
-    createdAt: '2026-09-22T14:00:00Z',
-  },
-  {
-    id: 'rinv-3',
-    invoiceNumber: 'REC-3003',
-    sourceName: 'مؤسسة رواد النقل والتبريد',
-    amount: 8500,
-    invoiceDate: getDateOffset(-1),
-    notes: 'خدمات نقل مبرد للشحنات المجمدة',
-    receiptStatus: 'not_received', // لم يتم الاستلام
-    createdAt: '2026-09-28T16:00:00Z',
-  },
-];
-
-export const loadStoredData = () => {
+/**
+ * Load stored data strictly for a specific shop
+ */
+export const loadStoredData = (targetShopId: string = getActiveShopId()) => {
+  const shopId = targetShopId || 'BUNN';
   const today = getTodayString();
+  const defaultSeeds: {
+    customers: Customer[];
+    invoices: CustomerInvoice[];
+    checks: CheckItem[];
+    receivedInvoices: ReceivedInvoice[];
+  } = {
+    customers: [],
+    invoices: [],
+    checks: [],
+    receivedInvoices: [],
+  };
+
+  const custKey = getShopStorageKey('customers', shopId);
+  const invKey = getShopStorageKey('customer_invoices', shopId);
+  const chkKey = getShopStorageKey('checks', shopId);
+  const recKey = getShopStorageKey('received_invoices', shopId);
+  const notifKey = getShopStorageKey('notifications', shopId);
 
   // Load Customers
   let customers: Customer[];
   try {
-    const raw = localStorage.getItem(CUSTOMERS_KEY);
-    customers = raw ? JSON.parse(raw) : INITIAL_CUSTOMERS;
+    const raw = localStorage.getItem(custKey);
+    customers = raw ? JSON.parse(raw) : defaultSeeds.customers;
   } catch {
-    customers = INITIAL_CUSTOMERS;
+    customers = defaultSeeds.customers;
   }
 
   // Load Customer Invoices
   let customerInvoices: CustomerInvoice[];
   try {
-    const raw = localStorage.getItem(CUSTOMER_INVOICES_KEY);
-    customerInvoices = raw ? JSON.parse(raw) : INITIAL_CUSTOMER_INVOICES;
+    const raw = localStorage.getItem(invKey);
+    customerInvoices = raw ? JSON.parse(raw) : defaultSeeds.invoices;
   } catch {
-    customerInvoices = INITIAL_CUSTOMER_INVOICES;
+    customerInvoices = defaultSeeds.invoices;
   }
 
-  // Load Checks & recalculate automatic statuses based on today's date
+  // Load Checks & recalculate status based on today
   let checks: CheckItem[];
   try {
-    const raw = localStorage.getItem(CHECKS_KEY);
-    const parsed: CheckItem[] = raw ? JSON.parse(raw) : INITIAL_CHECKS;
+    const raw = localStorage.getItem(chkKey);
+    const parsed: CheckItem[] = raw ? JSON.parse(raw) : defaultSeeds.checks;
     checks = parsed.map((chk) => ({
       ...chk,
       status: computeCheckStatus(chk, today),
     }));
   } catch {
-    checks = INITIAL_CHECKS.map((chk) => ({
+    checks = defaultSeeds.checks.map((chk) => ({
       ...chk,
       status: computeCheckStatus(chk, today),
     }));
   }
 
-  // Load Received Invoices (strictly manual status!)
+  // Load Received Invoices
   let receivedInvoices: ReceivedInvoice[];
   try {
-    const raw = localStorage.getItem(RECEIVED_INVOICES_KEY);
-    receivedInvoices = raw ? JSON.parse(raw) : INITIAL_RECEIVED_INVOICES;
+    const raw = localStorage.getItem(recKey);
+    receivedInvoices = raw ? JSON.parse(raw) : defaultSeeds.receivedInvoices;
   } catch {
-    receivedInvoices = INITIAL_RECEIVED_INVOICES;
+    receivedInvoices = defaultSeeds.receivedInvoices;
   }
 
   // Load Notifications
   let notifications: AlertNotification[] = [];
   try {
-    const raw = localStorage.getItem(NOTIFICATIONS_KEY);
+    const raw = localStorage.getItem(notifKey);
     notifications = raw ? JSON.parse(raw) : [];
   } catch {
     notifications = [];
@@ -267,31 +336,26 @@ export const loadStoredData = () => {
   return { customers, customerInvoices, checks, receivedInvoices, notifications };
 };
 
-export const saveCustomers = (customers: Customer[]) => {
-  localStorage.setItem(CUSTOMERS_KEY, JSON.stringify(customers));
+export const saveCustomers = (customers: Customer[], shopId: string = getActiveShopId()) => {
+  localStorage.setItem(getShopStorageKey('customers', shopId), JSON.stringify(customers));
 };
 
-export const saveChecks = (checks: CheckItem[]) => {
-  localStorage.setItem(CHECKS_KEY, JSON.stringify(checks));
+export const saveChecks = (checks: CheckItem[], shopId: string = getActiveShopId()) => {
+  localStorage.setItem(getShopStorageKey('checks', shopId), JSON.stringify(checks));
 };
 
-export const saveCustomerInvoices = (invoices: CustomerInvoice[]) => {
-  localStorage.setItem(CUSTOMER_INVOICES_KEY, JSON.stringify(invoices));
+export const saveCustomerInvoices = (invoices: CustomerInvoice[], shopId: string = getActiveShopId()) => {
+  localStorage.setItem(getShopStorageKey('customer_invoices', shopId), JSON.stringify(invoices));
 };
 
-export const saveReceivedInvoices = (invoices: ReceivedInvoice[]) => {
-  localStorage.setItem(RECEIVED_INVOICES_KEY, JSON.stringify(invoices));
+export const saveReceivedInvoices = (invoices: ReceivedInvoice[], shopId: string = getActiveShopId()) => {
+  localStorage.setItem(getShopStorageKey('received_invoices', shopId), JSON.stringify(invoices));
 };
 
-export const saveNotifications = (notifications: AlertNotification[]) => {
-  localStorage.setItem(NOTIFICATIONS_KEY, JSON.stringify(notifications));
+export const saveNotifications = (notifications: AlertNotification[], shopId: string = getActiveShopId()) => {
+  localStorage.setItem(getShopStorageKey('notifications', shopId), JSON.stringify(notifications));
 };
 
-export const resetToSeedData = () => {
-  localStorage.setItem(CUSTOMERS_KEY, JSON.stringify(INITIAL_CUSTOMERS));
-  localStorage.setItem(CHECKS_KEY, JSON.stringify(INITIAL_CHECKS));
-  localStorage.setItem(CUSTOMER_INVOICES_KEY, JSON.stringify(INITIAL_CUSTOMER_INVOICES));
-  localStorage.setItem(RECEIVED_INVOICES_KEY, JSON.stringify(INITIAL_RECEIVED_INVOICES));
-  localStorage.removeItem(NOTIFICATIONS_KEY);
-  return loadStoredData();
+export const resetToSeedData = (shopId: string = getActiveShopId()) => {
+  return loadStoredData(shopId);
 };

@@ -11,8 +11,45 @@ export type CheckStatus =
   | 'تم صرفه'
   | 'ملغي';
 
+export interface Attachment {
+  id?: string;
+  name: string;
+  url: string; // Direct link or drive thumbnail/view URL
+  fileId?: string;
+  mimeType?: string;
+  size?: number;
+}
+
+export interface Shop {
+  shopId: string; // Unique ID (e.g., BUNN, ABC001)
+  shopName: string; // Display name
+  contactName?: string;
+  phone?: string;
+  email?: string;
+  status: 'active' | 'inactive';
+  notes?: string;
+  createdAt: string;
+}
+
+export type UserRole = 'admin' | 'shop_user';
+
+export interface UserSession {
+  userId: string;
+  sessionId: string;
+  token: string;
+  username: string;
+  name: string;
+  shopName: string;
+  role: UserRole;
+  allowedShopIds: string[];
+  currentShopId: string;
+  createdAt: string;
+  expiresAt: string;
+}
+
 export interface Customer {
   id: string; // CustomerID
+  shopId?: string; // Multi-tenant ShopID
   name: string; // ShopName (اسم المحل)
   contactPerson: string; // ContactName (اسم المسؤول)
   phone: string; // Phone (رقم الجوال)
@@ -23,6 +60,7 @@ export interface Customer {
 
 export interface CheckItem {
   id: string; // ChequeID
+  shopId?: string; // Multi-tenant ShopID
   checkNumber: string; // ChequeNumber (رقم الشيك)
   customerId: string; // CustomerID (معرف العميل)
   customerName: string; // اسم المحل للتسهيل في العرض
@@ -30,8 +68,8 @@ export interface CheckItem {
   dueDate: string; // DueDate (تاريخ استحقاق/خروج الشيك YYYY-MM-DD)
   linkedInvoiceId?: string; // InvoiceID (معرف الفاتورة المرتبطة)
   linkedInvoiceNumber?: string; // رقم الفاتورة المرتبطة
-  image?: string; // ChequeImage (رابط الصورة في Google Drive أو Data URL)
-  bankName?: string; // Bank (اسم البنك)
+  image?: string; // ChequeImage (رابط الصورة في Google Drive أو Data URL أو JSON string)
+  attachments?: Attachment[]; // قائمة المرفقات المتعددة
   notes?: string; // Notes (ملاحظات)
   status: CheckStatus; // Status (الحالة المحسوبة أو المحددة)
   manualStatus?: 'cashed' | 'cancelled' | 'مدفوع' | 'ملغي'; // الحالة اليدوية
@@ -41,14 +79,16 @@ export interface CheckItem {
 
 export interface CustomerInvoice {
   id: string; // InvoiceID
+  shopId?: string; // Multi-tenant ShopID
   invoiceNumber: string; // InvoiceNumber (رقم الفاتورة)
   customerId: string; // CustomerID (معرف العميل)
-  customerName?: string; // اسم المحل
+  customerName?: string; // اسم المحل / العميل
   amount: number; // Amount (مبلغ الفاتورة)
   invoiceDate: string; // InvoiceDate (تاريخ الفاتورة YYYY-MM-DD)
   receiptStatus?: 'مستلم' | 'مستحق' | 'received' | 'not_received'; // ReceiptStatus (حالة الاستحقاق/الاستلام)
   receiptDate?: string; // ReceiptDate (تاريخ الاستلام)
-  image?: string; // InvoiceFile (رابط الفاتورة في Google Drive أو Data URL)
+  image?: string; // InvoiceFile (رابط الفاتورة في Google Drive أو Data URL أو JSON string)
+  attachments?: Attachment[]; // قائمة المرفقات المتعددة
   notes?: string; // Notes (ملاحظات)
   createdAt: string; // CreatedAt
 }
@@ -57,21 +97,23 @@ export type ReceiptStatus = 'received' | 'not_received' | 'تم الاستلام
 
 export interface ReceivedInvoice {
   id: string; // ReceivedInvoiceID
+  shopId?: string; // Multi-tenant ShopID
   invoiceNumber: string; // InvoiceNumber (رقم الفاتورة)
   sourceName: string; // EntityName (اسم الجهة)
   amount: number; // Amount (مبلغ الفاتورة)
   invoiceDate: string; // InvoiceDate (تاريخ الفاتورة YYYY-MM-DD)
-  image?: string; // InvoiceFile (رابط الفاتورة في Google Drive أو Data URL)
+  image?: string; // InvoiceFile (رابط الفاتورة في Google Drive أو Data URL أو JSON string)
+  attachments?: Attachment[]; // قائمة المرفقات المتعددة
   notes?: string; // Notes (ملاحظات)
   receiptStatus: ReceiptStatus; // ReceiptStatus: تم الاستلام / لم يتم الاستلام (يدوي فقط!)
   receiptDate?: string; // ReceiptDate (تاريخ الاستلام)
   createdAt: string; // CreatedAt
-  // النسبة خاصة بالعمليات الحسابية الداخلية ولا تظهر أبدًا في واجهة المستخدم
   _internalRate?: number;
 }
 
 export interface AlertNotification {
   id: string;
+  shopId?: string;
   checkId: string;
   storeName: string;
   amount: number;
@@ -89,5 +131,5 @@ export interface AppSettings {
   reminder3Days: number; // 1
   reminderToday: number; // 0
   gasWebAppUrl?: string; // رابط تطبيق الويب لـ Google Apps Script
+  theme?: 'dark' | 'light';
 }
-

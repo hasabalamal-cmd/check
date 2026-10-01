@@ -23,7 +23,7 @@ export const exportDataToGoogleSheets = async (
   }
 ): Promise<ExportToSheetsResult> => {
   const currentDate = new Date().toLocaleDateString('ar-SA');
-  const title = `سند - إدارة الشيكات والفواتير (${currentDate})`;
+  const title = `AZAT - إدارة الشيكات والفواتير (${currentDate})`;
 
   // Step 1: Create spreadsheet with 4 sheet tabs
   const createPayload = {
@@ -72,7 +72,7 @@ export const exportDataToGoogleSheets = async (
   ];
 
   const checksRows = [
-    ['رقم الشيك', 'اسم المحل', 'المبلغ (ر.س)', 'تاريخ الاستحقاق', 'الحالة', 'الفاتورة المرتبطة', 'اسم البنك', 'ملاحظات'],
+    ['رقم الشيك', 'اسم المحل', 'المبلغ (ر.س)', 'تاريخ الاستحقاق', 'الحالة', 'الفاتورة المرتبطة', 'ملاحظات'],
     ...data.checks.map((chk) => [
       chk.checkNumber,
       chk.customerName,
@@ -80,7 +80,6 @@ export const exportDataToGoogleSheets = async (
       chk.dueDate,
       CHECK_STATUS_CONFIG[chk.status]?.label || chk.status,
       chk.linkedInvoiceNumber || 'غير مرتبط',
-      chk.bankName || '',
       chk.notes || '',
     ]),
   ];

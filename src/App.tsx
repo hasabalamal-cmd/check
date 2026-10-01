@@ -1,15 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import confetti from 'canvas-confetti';
-import { User } from 'firebase/auth';
-import { Customer, CheckItem, CustomerInvoice, ReceivedInvoice, AlertNotification } from './types';
+import { Customer, CheckItem, CustomerInvoice, ReceivedInvoice, AlertNotification, Shop, UserSession } from './types';
 import {
-  loadStoredData,
   saveCustomers,
   saveChecks,
   saveCustomerInvoices,
   saveReceivedInvoices,
   saveNotifications,
-  resetToSeedData,
 } from './services/storage';
 import {
   getTodayString,
@@ -17,10 +14,20 @@ import {
   evaluateCheckNotifications,
   formatCurrency,
   formatArabicDate,
+  sortAlertsByClosest,
 } from './utils/checkCalculations';
-import { initAuth } from './services/auth';
+import {
+  getCurrentSession,
+  getStoredShops,
+  saveStoredShops,
+  getActiveShopId,
+  setActiveShopId,
+  getAvailableShops,
+  setCurrentSession,
+} from './services/auth';
 import {
   isGasConfigured,
+  logout,
   fetchAllDataFromGas,
   createCustomerInGas,
   updateCustomerInGas,
@@ -47,6 +54,7 @@ import { ReceivedInvoicesView } from './components/ReceivedInvoicesView';
 import { CustomerInvoicesView } from './components/CustomerInvoicesView';
 import { CustomersView } from './components/CustomersView';
 import { AutomationBotView } from './components/AutomationBotView';
+import { Footer } from './components/Footer';
 
 // Modals
 import { CheckFormModal } from './components/CheckFormModal';
@@ -55,11 +63,17 @@ import { CustomerInvoiceFormModal } from './components/CustomerInvoiceFormModal'
 import { CustomerFormModal } from './components/CustomerFormModal';
 import { ImagePreviewModal } from './components/ImagePreviewModal';
 import { NotificationCenterModal } from './components/NotificationCenterModal';
-import { GoogleSheetsModal } from './components/GoogleSheetsModal';
 import { SettingsModal } from './components/SettingsModal';
+import { LoginModal } from './components/LoginModal';
+import { ShopManagementModal } from './components/ShopManagementModal';
 
 export default function App() {
-  // Main Data States
+  // Multi-Tenant Session & Shops State
+  const [shops, setShops] = useState<Shop[]>(() => getAvailableShops(getStoredShops()));
+  const [currentSession, setSession] = useState<UserSession | null>(() => getCurrentSession());
+  const [currentShopId, setCurrentShopIdState] = useState<string>(() => getActiveShopId());
+
+  // Main Data States (Partitioned by currentShopId)
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [checks, setChecks] = useState<CheckItem[]>([]);
   const [customerInvoices, setCustomerInvoices] = useState<CustomerInvoice[]>([]);
@@ -68,15 +82,15 @@ export default function App() {
 
   // Navigation State
   const [activeTab, setActiveTab] = useState<string>('dashboard');
-
-  // Firebase Auth State
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   // Browser Notification Permission
   const [hasBrowserPermission, setHasBrowserPermission] = useState<boolean>(false);
 
   // Cloud Database States
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const [settingsInitialTab, setSettingsInitialTab] = useState<'shops' | 'database'>('shops');
+  const [isShopManagementOpen, setIsShopManagementOpen] = useState(false);
   const [isLoadingGas, setIsLoadingGas] = useState(false);
   const [gasNotification, setGasNotification] = useState<string | null>(null);
 
@@ -94,45 +108,90 @@ export default function App() {
   const [customerToEdit, setCustomerToEdit] = useState<Customer | null>(null);
 
   const [isNotificationCenterOpen, setIsNotificationCenterOpen] = useState(false);
-  const [isGoogleSheetsModalOpen, setIsGoogleSheetsModalOpen] = useState(false);
-
   const [previewImage, setPreviewImage] = useState<{ url: string; title: string } | null>(null);
 
-  // Load data from Google Sheets API with fallback to LocalStorage
-  const loadData = useCallback(async () => {
-    // 1. Initial immediate load from local cache
-    const data = loadStoredData();
-    setCustomers(data.customers);
-    setChecks(data.checks);
-    setCustomerInvoices(data.customerInvoices);
-    setReceivedInvoices(data.receivedInvoices);
-    setNotifications(data.notifications);
+  // Active Shop details
+  const currentShop = shops.find((s) => s.shopId === currentShopId) || shops[0] || null;
+  const currentShopName = currentShop?.shopName || 'Bunn Cafe & Roastery';
 
-    // 2. Fetch fresh data from Google Apps Script if configured
+  // Available shops for current user
+  const availableShops = getAvailableShops(shops);
+
+  // Check if current authenticated user has Admin master role
+  const isAdmin = currentSession?.role === 'admin';
+
+  // Ensure settings modals are automatically closed if role is non-admin
+  useEffect(() => {
+    if (!isAdmin) {
+      if (isSettingsModalOpen) setIsSettingsModalOpen(false);
+      if (isShopManagementOpen) setIsShopManagementOpen(false);
+    }
+  }, [isAdmin, isSettingsModalOpen, isShopManagementOpen]);
+
+  // Permanently enforce Dark Mode on documentElement
+  useEffect(() => {
+    document.documentElement.classList.add('dark');
+    document.documentElement.classList.remove('light');
+    localStorage.setItem('sanad_theme', 'dark');
+  }, []);
+
+  // Switch Active Shop Handler
+  const handleSelectShop = (shopId: string) => {
+    if (shopId === currentShopId) return;
+
+    setActiveShopId(shopId);
+    setCurrentShopIdState(shopId);
+    fetchShopData(shopId);
+  };
+
+  // Load data for a specific shop
+  const fetchShopData = useCallback(async (shopId: string) => {
+    const session = getCurrentSession();
+    if (!session || !session.allowedShopIds.includes(shopId)) {
+      setCustomers([]);
+      setChecks([]);
+      setCustomerInvoices([]);
+      setReceivedInvoices([]);
+      setNotifications([]);
+      return;
+    }
+
+    setCustomers([]);
+    setChecks([]);
+    setCustomerInvoices([]);
+    setReceivedInvoices([]);
+    setNotifications([]);
+
     if (isGasConfigured()) {
       setIsLoadingGas(true);
       try {
-        const gasData = await fetchAllDataFromGas();
+        const gasData = await fetchAllDataFromGas(shopId);
+
+        if (Array.isArray(gasData.shops) && gasData.shops.length > 0) {
+          setShops(gasData.shops);
+        }
+
         if (Array.isArray(gasData.customers)) {
           setCustomers(gasData.customers);
-          saveCustomers(gasData.customers);
+          saveCustomers(gasData.customers, shopId);
         }
         if (Array.isArray(gasData.invoices)) {
           setCustomerInvoices(gasData.invoices);
-          saveCustomerInvoices(gasData.invoices);
+          saveCustomerInvoices(gasData.invoices, shopId);
         }
         if (Array.isArray(gasData.checks)) {
           setChecks(gasData.checks);
-          saveChecks(gasData.checks);
+          saveChecks(gasData.checks, shopId);
         }
         if (Array.isArray(gasData.receivedInvoices)) {
           setReceivedInvoices(gasData.receivedInvoices);
-          saveReceivedInvoices(gasData.receivedInvoices);
+          saveReceivedInvoices(gasData.receivedInvoices, shopId);
         }
-        setGasNotification('تمت مزامنة البيانات بنجاح من Google Sheets');
-        setTimeout(() => setGasNotification(null), 4000);
+
+        setGasNotification(`تمت مزامنة بيانات ${gasData.shops?.find(s => s.shopId === shopId)?.shopName || shopId} بنجاح`);
+        setTimeout(() => setGasNotification(null), 3500);
       } catch (err: any) {
-        console.warn('Google Apps Script sync offline, using local cache:', err);
+        console.error('Google Apps Script data request failed:', err);
       } finally {
         setIsLoadingGas(false);
       }
@@ -141,23 +200,47 @@ export default function App() {
 
   // Initialize data on mount
   useEffect(() => {
-    loadData();
+    fetchShopData(currentShopId);
 
     // Check browser notification permission
     if (typeof window !== 'undefined' && 'Notification' in window) {
       setHasBrowserPermission(Notification.permission === 'granted');
     }
+  }, [currentShopId, currentSession, fetchShopData]);
 
-    // Initialize Firebase Auth listener
-    const unsubscribe = initAuth(
-      (user) => setCurrentUser(user),
-      () => setCurrentUser(null)
-    );
-
-    return () => {
-      if (unsubscribe) unsubscribe();
+  useEffect(() => {
+    const expireSession = () => {
+      setSession(null);
+      setShops([]);
+      setCustomers([]);
+      setChecks([]);
+      setCustomerInvoices([]);
+      setReceivedInvoices([]);
+      setNotifications([]);
     };
-  }, [loadData]);
+    const showApiError = (event: Event) => {
+      const message = (event as CustomEvent<string>).detail || 'تعذر تنفيذ الطلب على Google Apps Script.';
+      setGasNotification(message);
+      window.setTimeout(() => {
+        setGasNotification((current) => current === message ? null : current);
+      }, 8000);
+    };
+    window.addEventListener('sanad:session-expired', expireSession);
+    window.addEventListener('sanad:api-error', showApiError);
+    return () => {
+      window.removeEventListener('sanad:session-expired', expireSession);
+      window.removeEventListener('sanad:api-error', showApiError);
+    };
+  }, []);
+
+  // Enforce dark mode on html document element and body
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      document.documentElement.classList.add('dark');
+      document.documentElement.classList.remove('light');
+      document.body.className = "bg-slate-950 text-slate-100 font-['Cairo',sans-serif] antialiased";
+    }
+  }, []);
 
   // Run automated check scanner
   const runBotScan = useCallback(
@@ -170,27 +253,27 @@ export default function App() {
         status: computeCheckStatus(c, today),
       }));
 
-      // Generate alerts according to schedule (7 days, 3 days, 1 day, today, overdue)
+      // Generate alerts according to schedule
       const newAlerts = evaluateCheckNotifications(updatedChecks, today);
 
-      // Merge with existing notifications avoiding duplicates
+      // Merge with existing notifications avoiding duplicates and sort closest first
       const existingIds = new Set(notifications.map((n) => n.id));
       const filteredNew = newAlerts.filter((a) => !existingIds.has(a.id));
 
-      const mergedNotifications = [...filteredNew, ...notifications];
+      const mergedNotifications = sortAlertsByClosest([...filteredNew, ...notifications]);
 
       setChecks(updatedChecks);
-      saveChecks(updatedChecks);
+      saveChecks(updatedChecks, currentShopId);
 
       if (filteredNew.length > 0) {
         setNotifications(mergedNotifications);
-        saveNotifications(mergedNotifications);
+        saveNotifications(mergedNotifications, currentShopId);
 
         // Send browser notification if permission granted
         if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
           filteredNew.forEach((alert) => {
             try {
-              new Notification(`تنبيه شيك ${alert.daysRemaining <= 0 ? 'مستحق' : 'قادم'}: ${alert.storeName}`, {
+              new Notification(`[${currentShopName}] تنبيه شيك ${alert.daysRemaining <= 0 ? 'مستحق' : 'قادم'}: ${alert.storeName}`, {
                 body: `المبلغ: ${formatCurrency(alert.amount)}\nتاريخ الاستحقاق: ${formatArabicDate(alert.dueDate)}\n${
                   alert.daysRemaining > 0 ? `متبقي ${alert.daysRemaining} أيام` : 'مستحق اليوم أو متأخر'
                 }`,
@@ -211,7 +294,7 @@ export default function App() {
         });
       }
     },
-    [checks, notifications]
+    [checks, notifications, currentShopId, currentShopName]
   );
 
   // Run bot scan once when checks are loaded
@@ -227,7 +310,7 @@ export default function App() {
       const permission = await Notification.requestPermission();
       setHasBrowserPermission(permission === 'granted');
       if (permission === 'granted') {
-        new Notification('سند - نظام الشيكات والفواتير', {
+        new Notification(`AZAT - ${currentShopName}`, {
           body: 'تم تفعيل التنبيهات بنجاح! ستصلك إشعارات الشيكات في المواعيد المحددة.',
         });
       }
@@ -246,6 +329,7 @@ export default function App() {
     } else {
       targetCustomer = {
         id: `cust-${Date.now()}`,
+        shopId: currentShopId,
         name: customerData.name || '',
         contactPerson: customerData.contactPerson || '',
         phone: customerData.phone || '',
@@ -256,7 +340,7 @@ export default function App() {
       updated = [targetCustomer, ...customers];
     }
     setCustomers(updated);
-    saveCustomers(updated);
+    saveCustomers(updated, currentShopId);
     setCustomerToEdit(null);
 
     // Sync to Google Apps Script
@@ -265,7 +349,7 @@ export default function App() {
         if (isEdit) {
           await updateCustomerInGas(targetCustomer);
         } else {
-          await createCustomerInGas(targetCustomer);
+          await createCustomerInGas(targetCustomer, currentShopId);
         }
       } catch (err) {
         console.warn('Error syncing customer to GAS:', err);
@@ -276,12 +360,12 @@ export default function App() {
   const handleDeleteCustomer = async (id: string) => {
     const cust = customers.find((c) => c.id === id);
     if (!cust) return;
-    const confirmDelete = window.confirm(`هل أنت متأكد من حذف بيانات المحل "${cust.name}"؟`);
+    const confirmDelete = window.confirm(`هل أنت متأكد من حذف بيانات العميل "${cust.name}"؟`);
     if (!confirmDelete) return;
 
     const updated = customers.filter((c) => c.id !== id);
     setCustomers(updated);
-    saveCustomers(updated);
+    saveCustomers(updated, currentShopId);
 
     if (isGasConfigured()) {
       try {
@@ -304,6 +388,7 @@ export default function App() {
     } else {
       targetCheck = {
         id: `chk-${Date.now()}`,
+        shopId: currentShopId,
         checkNumber: checkData.checkNumber || '',
         customerId: checkData.customerId || '',
         customerName: checkData.customerName || '',
@@ -311,9 +396,9 @@ export default function App() {
         dueDate: checkData.dueDate || getTodayString(),
         linkedInvoiceId: checkData.linkedInvoiceId,
         linkedInvoiceNumber: checkData.linkedInvoiceNumber,
-        bankName: checkData.bankName,
         notes: checkData.notes,
         image: checkData.image,
+        attachments: checkData.attachments,
         status: checkData.status || 'upcoming',
         manualStatus: checkData.manualStatus,
         cashedDate: checkData.cashedDate,
@@ -322,7 +407,7 @@ export default function App() {
       updated = [targetCheck, ...checks];
     }
     setChecks(updated);
-    saveChecks(updated);
+    saveChecks(updated, currentShopId);
     setCheckToEdit(null);
 
     // Sync to Google Apps Script
@@ -331,7 +416,7 @@ export default function App() {
         if (isEdit) {
           await updateChequeInGas(targetCheck);
         } else {
-          await createChequeInGas(targetCheck);
+          await createChequeInGas(targetCheck, currentShopId);
         }
       } catch (err) {
         console.warn('Error syncing cheque to GAS:', err);
@@ -347,7 +432,7 @@ export default function App() {
 
     const updated = checks.filter((c) => c.id !== id);
     setChecks(updated);
-    saveChecks(updated);
+    saveChecks(updated, currentShopId);
 
     if (isGasConfigured()) {
       try {
@@ -374,9 +459,8 @@ export default function App() {
     });
 
     setChecks(updated);
-    saveChecks(updated);
+    saveChecks(updated, currentShopId);
 
-    // Celebration confetti
     confetti({
       particleCount: 80,
       spread: 70,
@@ -394,7 +478,31 @@ export default function App() {
   };
 
   // ==================== Customer Invoice Handlers ====================
-  const handleSaveCustomerInvoice = async (invData: Partial<CustomerInvoice>) => {
+  const handleSaveCustomerInvoice = async (
+    invData: Partial<CustomerInvoice>,
+    newCustomerData?: Partial<Customer>
+  ) => {
+    // If a new customer was created simultaneously inside invoice modal
+    if (newCustomerData) {
+      const freshCustomer: Customer = {
+        id: newCustomerData.id || `cust-${Date.now()}`,
+        shopId: currentShopId,
+        name: newCustomerData.name || '',
+        contactPerson: newCustomerData.contactPerson || '',
+        phone: newCustomerData.phone || '',
+        address: newCustomerData.address || '',
+        notes: newCustomerData.notes || '',
+        createdAt: new Date().toISOString(),
+      };
+      const updatedCustomers = [freshCustomer, ...customers];
+      setCustomers(updatedCustomers);
+      saveCustomers(updatedCustomers, currentShopId);
+
+      if (isGasConfigured()) {
+        createCustomerInGas(freshCustomer, currentShopId).catch(console.warn);
+      }
+    }
+
     let updated: CustomerInvoice[];
     let targetInv: CustomerInvoice;
     const isEdit = Boolean(customerInvoiceToEdit);
@@ -405,6 +513,7 @@ export default function App() {
     } else {
       targetInv = {
         id: `cinv-${Date.now()}`,
+        shopId: currentShopId,
         invoiceNumber: invData.invoiceNumber || '',
         customerId: invData.customerId || '',
         customerName: invData.customerName || '',
@@ -414,12 +523,13 @@ export default function App() {
         receiptDate: invData.receiptDate,
         notes: invData.notes,
         image: invData.image,
+        attachments: invData.attachments,
         createdAt: new Date().toISOString(),
       };
       updated = [targetInv, ...customerInvoices];
     }
     setCustomerInvoices(updated);
-    saveCustomerInvoices(updated);
+    saveCustomerInvoices(updated, currentShopId);
     setCustomerInvoiceToEdit(null);
 
     if (isGasConfigured()) {
@@ -427,7 +537,7 @@ export default function App() {
         if (isEdit) {
           await updateInvoiceInGas(targetInv);
         } else {
-          await createInvoiceInGas(targetInv);
+          await createInvoiceInGas(targetInv, currentShopId);
         }
       } catch (err) {
         console.warn('Error syncing customer invoice to GAS:', err);
@@ -443,7 +553,7 @@ export default function App() {
 
     const updated = customerInvoices.filter((i) => i.id !== id);
     setCustomerInvoices(updated);
-    saveCustomerInvoices(updated);
+    saveCustomerInvoices(updated, currentShopId);
 
     if (isGasConfigured()) {
       try {
@@ -461,11 +571,12 @@ export default function App() {
       linkedInvoiceId: inv.id,
       linkedInvoiceNumber: inv.invoiceNumber,
       amount: inv.amount,
+      checkNumber: '',
     } as any);
     setIsCheckModalOpen(true);
   };
 
-  // ==================== Received Invoices Handlers (Standalone!) ====================
+  // ==================== Received Invoices Handlers ====================
   const handleSaveReceivedInvoice = async (invData: Partial<ReceivedInvoice>) => {
     let updated: ReceivedInvoice[];
     let targetInv: ReceivedInvoice;
@@ -477,20 +588,22 @@ export default function App() {
     } else {
       targetInv = {
         id: `rinv-${Date.now()}`,
+        shopId: currentShopId,
         invoiceNumber: invData.invoiceNumber || '',
         sourceName: invData.sourceName || '',
         amount: invData.amount || 0,
         invoiceDate: invData.invoiceDate || getTodayString(),
         notes: invData.notes,
         image: invData.image,
-        receiptStatus: invData.receiptStatus || 'not_received', // Manual only!
+        attachments: invData.attachments,
+        receiptStatus: invData.receiptStatus || 'not_received',
         receiptDate: invData.receiptDate,
         createdAt: new Date().toISOString(),
       };
       updated = [targetInv, ...receivedInvoices];
     }
     setReceivedInvoices(updated);
-    saveReceivedInvoices(updated);
+    saveReceivedInvoices(updated, currentShopId);
     setReceivedInvoiceToEdit(null);
 
     if (isGasConfigured()) {
@@ -498,7 +611,7 @@ export default function App() {
         if (isEdit) {
           await updateReceivedInvoiceInGas(targetInv);
         } else {
-          await createReceivedInvoiceInGas(targetInv);
+          await createReceivedInvoiceInGas(targetInv, currentShopId);
         }
       } catch (err) {
         console.warn('Error syncing received invoice to GAS:', err);
@@ -514,7 +627,7 @@ export default function App() {
 
     const updated = receivedInvoices.filter((i) => i.id !== id);
     setReceivedInvoices(updated);
-    saveReceivedInvoices(updated);
+    saveReceivedInvoices(updated, currentShopId);
 
     if (isGasConfigured()) {
       try {
@@ -525,7 +638,7 @@ export default function App() {
     }
   };
 
-  // Direct manual toggle for Received Invoice: strictly manual!
+  // Direct manual toggle for Received Invoice
   const handleToggleReceiptStatus = async (id: string) => {
     let nextStatusArabic = 'لم يتم الاستلام';
     let targetDate = '';
@@ -552,7 +665,7 @@ export default function App() {
     });
 
     setReceivedInvoices(updated);
-    saveReceivedInvoices(updated);
+    saveReceivedInvoices(updated, currentShopId);
 
     if (isGasConfigured()) {
       try {
@@ -567,42 +680,82 @@ export default function App() {
   const handleMarkAllAsRead = () => {
     const updated = notifications.map((n) => ({ ...n, isRead: true }));
     setNotifications(updated);
-    saveNotifications(updated);
+    saveNotifications(updated, currentShopId);
   };
 
   const handleMarkAsRead = (id: string) => {
     const updated = notifications.map((n) => (n.id === id ? { ...n, isRead: true } : n));
     setNotifications(updated);
-    saveNotifications(updated);
+    saveNotifications(updated, currentShopId);
   };
 
-  // Reset to seed data
-  const handleResetSeedData = () => {
-    const confirmed = window.confirm('هل تريد استعادة البيانات النموذجية الأساسية؟ سيتم تحديث السجلات الحالية.');
-    if (!confirmed) return;
+  const handleDeleteNotification = (id: string) => {
+    const updated = notifications.filter((n) => n.id !== id);
+    setNotifications(updated);
+    saveNotifications(updated, currentShopId);
+  };
 
-    const fresh = resetToSeedData();
-    setCustomers(fresh.customers);
-    setChecks(fresh.checks);
-    setCustomerInvoices(fresh.customerInvoices);
-    setReceivedInvoices(fresh.receivedInvoices);
-    setNotifications(fresh.notifications);
-    runBotScan(true);
+  const handleClearAllNotifications = () => {
+    if (notifications.length === 0) return;
+    const confirmed = window.confirm('هل أنت متأكد من حذف جميع الإشعارات من القائمة؟');
+    if (!confirmed) return;
+    setNotifications([]);
+    saveNotifications([], currentShopId);
+  };
+
+  // Logout Handler
+  const handleLogout = async () => {
+    await logout();
+    setSession(null);
+    setShops([]);
+    setCustomers([]);
+    setChecks([]);
+    setCustomerInvoices([]);
+    setReceivedInvoices([]);
+    setNotifications([]);
+  };
+
+  // Login Success Handler
+  const handleLoginSuccess = (session: UserSession) => {
+    setSession(session);
+    setCurrentShopIdState(session.currentShopId);
+    setActiveShopId(session.currentShopId);
   };
 
   // Badge calculations
   const unreadAlertsCount = notifications.filter((n) => !n.isRead).length;
-  const unreceivedInvoicesCount = receivedInvoices.filter((i) => i.receiptStatus === 'not_received').length;
-  const dueTodayChecksCount = checks.filter((c) => c.status === 'due_today').length;
+  const unreceivedInvoicesCount = receivedInvoices.filter(
+    (i) => i.receiptStatus === 'not_received' || i.receiptStatus === 'لم يتم الاستلام'
+  ).length;
+  const dueTodayChecksCount = checks.filter(
+    (c) => c.status === 'due_today' || c.status === 'مستحق اليوم'
+  ).length;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-['Cairo',sans-serif]">
-      {/* Top Navigation Bar */}
+    <div className="min-h-screen flex flex-col font-['Cairo',sans-serif] bg-slate-950 text-slate-100 selection:bg-emerald-500/30 selection:text-emerald-200">
+      {gasNotification && (
+        <div
+          role="status"
+          className="fixed bottom-5 left-5 z-[100] max-w-md rounded-xl border border-amber-500/30 bg-slate-900 px-4 py-3 text-xs text-amber-100 shadow-xl"
+        >
+          {gasNotification}
+        </div>
+      )}
+      {/* Login Modal Overlay (Required if not authenticated) */}
+      <LoginModal
+        isOpen={!currentSession}
+        onLoginSuccess={handleLoginSuccess}
+      />
+
+      {/* Top Navigation Bar with Shop Selector & Cloud Status */}
       <Navbar
-        currentUser={currentUser}
+        currentSession={currentSession}
+        currentShop={currentShop}
+        availableShops={availableShops}
+        onSelectShop={handleSelectShop}
         unreadAlertsCount={unreadAlertsCount}
         onOpenNotifications={() => setIsNotificationCenterOpen(true)}
-        onOpenGoogleSheets={() => setIsGoogleSheetsModalOpen(true)}
+        onOpenGoogleSheets={() => setIsSettingsModalOpen(true)}
         onOpenAddCheck={() => {
           setCheckToEdit(null);
           setIsCheckModalOpen(true);
@@ -623,19 +776,22 @@ export default function App() {
         onSelectTab={setActiveTab}
         isGasConnected={isGasConfigured()}
         isLoadingGas={isLoadingGas}
-        onOpenSettings={() => setIsSettingsModalOpen(true)}
-        onRefreshGasData={loadData}
+        onOpenSettings={isAdmin ? () => {
+          setSettingsInitialTab('database');
+          setIsSettingsModalOpen(true);
+        } : undefined}
+        onOpenShopManagement={isAdmin ? () => {
+          setSettingsInitialTab('shops');
+          setIsSettingsModalOpen(true);
+        } : undefined}
+        onRefreshGasData={() => fetchShopData(currentShopId)}
+        onLogout={handleLogout}
+        onToggleSidebar={() => setIsMobileSidebarOpen(true)}
+        isAdmin={isAdmin}
       />
 
-      {/* Cloud Sync Toast Notification */}
-      {gasNotification && (
-        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 px-4 py-2 bg-emerald-600/90 text-white text-xs font-semibold rounded-full shadow-xl border border-emerald-400/40 backdrop-blur-md animate-in fade-in slide-in-from-top-4">
-          {gasNotification}
-        </div>
-      )}
-
       <div className="flex-1 flex max-w-7xl w-full mx-auto">
-        {/* Sidebar */}
+        {/* Sidebar (Responsive Drawer on Mobile) */}
         <Sidebar
           activeTab={activeTab}
           onSelectTab={setActiveTab}
@@ -643,12 +799,18 @@ export default function App() {
           receivedInvoicesCount={receivedInvoices.length}
           unreceivedCount={unreceivedInvoicesCount}
           dueTodayCount={dueTodayChecksCount}
-          onResetSeedData={handleResetSeedData}
-          onOpenSettings={() => setIsSettingsModalOpen(true)}
+          onOpenSettings={isAdmin ? () => {
+            setSettingsInitialTab('shops');
+            setIsSettingsModalOpen(true);
+          } : undefined}
+          isMobileOpen={isMobileSidebarOpen}
+          onCloseMobile={() => setIsMobileSidebarOpen(false)}
+          currentShopName={currentShopName}
+          isAdmin={isAdmin}
         />
 
         {/* Main Content Area */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 pb-24 lg:pb-8 overflow-x-hidden">
+        <main className="flex-1 p-3 sm:p-6 lg:p-8 pb-28 sm:pb-24 lg:pb-8 overflow-x-hidden">
           {activeTab === 'dashboard' && (
             <Dashboard
               checks={checks}
@@ -667,6 +829,7 @@ export default function App() {
               }}
               onNavigateTab={(tab) => setActiveTab(tab)}
               onPreviewImage={(url, title) => setPreviewImage({ url, title })}
+              currentShopName={currentShopName}
             />
           )}
 
@@ -748,6 +911,7 @@ export default function App() {
                 setCheckToEdit({
                   customerId: cust.id,
                   customerName: cust.name,
+                  checkNumber: '',
                 } as any);
                 setIsCheckModalOpen(true);
               }}
@@ -770,8 +934,31 @@ export default function App() {
               onRequestBrowserPermission={requestBrowserPermission}
               hasBrowserPermission={hasBrowserPermission}
               onMarkAllAsRead={handleMarkAllAsRead}
+              onDeleteNotification={handleDeleteNotification}
+              onClearAllNotifications={handleClearAllNotifications}
             />
           )}
+
+          {/* Main System Footer */}
+          <Footer
+            currentShopName={currentShopName}
+            currentShopId={currentShopId}
+            isGasConnected={isGasConfigured()}
+            activeTab={activeTab}
+            onSelectTab={setActiveTab}
+            onOpenShopManagement={isAdmin ? () => {
+              setSettingsInitialTab('shops');
+              setIsSettingsModalOpen(true);
+            } : undefined}
+            onOpenSettings={isAdmin ? () => {
+              setSettingsInitialTab('database');
+              setIsSettingsModalOpen(true);
+            } : undefined}
+            checksCount={checks.length}
+            unreceivedCount={unreceivedInvoicesCount}
+            customersCount={customers.length}
+            isAdmin={isAdmin}
+          />
         </main>
       </div>
 
@@ -788,6 +975,8 @@ export default function App() {
         initialData={checkToEdit}
         customers={customers}
         customerInvoices={customerInvoices}
+        onPreviewImage={(url, title) => setPreviewImage({ url, title })}
+        currentShopName={currentShopName}
       />
 
       {/* Received Invoice Form Modal (Standalone) */}
@@ -799,9 +988,11 @@ export default function App() {
         }}
         onSave={handleSaveReceivedInvoice}
         initialData={receivedInvoiceToEdit}
+        onPreviewImage={(url, title) => setPreviewImage({ url, title })}
+        currentShopName={currentShopName}
       />
 
-      {/* Customer Invoice Form Modal */}
+      {/* Customer Invoice Form Modal (Supports Inline New Customer) */}
       <CustomerInvoiceFormModal
         isOpen={isCustomerInvoiceModalOpen}
         onClose={() => {
@@ -811,6 +1002,8 @@ export default function App() {
         onSave={handleSaveCustomerInvoice}
         initialData={customerInvoiceToEdit}
         customers={customers}
+        onPreviewImage={(url, title) => setPreviewImage({ url, title })}
+        currentShopName={currentShopName}
       />
 
       {/* Customer Form Modal */}
@@ -831,40 +1024,38 @@ export default function App() {
         notifications={notifications}
         onMarkAllAsRead={handleMarkAllAsRead}
         onMarkAsRead={handleMarkAsRead}
+        onDeleteNotification={handleDeleteNotification}
+        onClearAllNotifications={handleClearAllNotifications}
         onRunBotScan={() => runBotScan(true)}
         onCashCheck={handleCashCheck}
         onRequestBrowserPermission={requestBrowserPermission}
         hasBrowserPermission={hasBrowserPermission}
       />
 
-      {/* Google Sheets Direct Sync Modal */}
-      <GoogleSheetsModal
-        isOpen={isGoogleSheetsModalOpen}
-        onClose={() => setIsGoogleSheetsModalOpen(false)}
-        currentUser={currentUser}
-        onAuthChange={setCurrentUser}
-        data={{
-          customers,
-          checks,
-          customerInvoices,
-          receivedInvoices,
-        }}
+      {/* Shop Management Modal (Multi-Tenant Management - Admin Only) */}
+      <ShopManagementModal
+        isOpen={isShopManagementOpen && isAdmin}
+        onClose={() => setIsShopManagementOpen(false)}
+        shops={shops}
+        onShopsUpdated={(updatedShops) => setShops(updatedShops)}
+        isAdmin={isAdmin}
       />
 
-      {/* Google Apps Script & Database Settings Modal */}
+      {/* Google Apps Script & Database & Shop Management Settings Modal (Admin Only) */}
       <SettingsModal
-        isOpen={isSettingsModalOpen}
+        isOpen={isSettingsModalOpen && isAdmin}
         onClose={() => setIsSettingsModalOpen(false)}
-        onConnectionSuccess={loadData}
-        data={{
-          customers,
-          invoices: customerInvoices,
-          checks,
-          receivedInvoices,
-        }}
+        onConnectionSuccess={() => fetchShopData(currentShopId)}
+        currentShopName={currentShopName}
+        currentShopId={currentShopId}
+        shops={shops}
+        onShopsUpdated={(updatedShops) => setShops(updatedShops)}
+        onSelectShop={handleSelectShop}
+        initialTab={settingsInitialTab}
+        isAdmin={isAdmin}
       />
 
-      {/* Image Preview Modal */}
+      {/* Image & Gallery Preview Modal */}
       <ImagePreviewModal
         isOpen={!!previewImage}
         onClose={() => setPreviewImage(null)}
