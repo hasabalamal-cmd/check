@@ -207,8 +207,8 @@ export const ShopManagementModal: React.FC<ShopManagementModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 dark:bg-black/80 backdrop-blur-sm p-4 animate-in fade-in overflow-y-auto">
-      <div className="relative max-w-3xl w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700/80 rounded-3xl shadow-2xl overflow-hidden my-6 flex flex-col max-h-[90vh]">
+    <div className="mobile-entry-backdrop fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 dark:bg-black/80 backdrop-blur-sm p-4 animate-in fade-in overflow-y-auto">
+      <div className="mobile-entry-dialog relative max-w-3xl w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700/80 rounded-3xl shadow-2xl overflow-hidden my-6 flex flex-col max-h-[90vh]">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50/90 dark:bg-slate-900/90 shrink-0">
           <div className="flex items-center gap-3">
@@ -231,7 +231,7 @@ export const ShopManagementModal: React.FC<ShopManagementModalProps> = ({
         </div>
 
         {/* Content */}
-        <div className="p-6 overflow-y-auto space-y-6">
+        <div className="mobile-entry-content p-6 overflow-y-auto space-y-6">
           {error && (
             <div className="p-3 bg-rose-50 dark:bg-rose-500/15 border border-rose-200 dark:border-rose-500/40 rounded-xl flex items-center gap-2 text-rose-700 dark:text-rose-300 text-xs">
               <AlertCircle className="w-4 h-4 shrink-0 text-rose-500 dark:text-rose-400" />
@@ -248,7 +248,7 @@ export const ShopManagementModal: React.FC<ShopManagementModalProps> = ({
 
           {/* Form Modal Sub-section */}
           {isAdding || editingShop ? (
-            <form onSubmit={handleSave} className="bg-slate-50 dark:bg-slate-800/60 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-4">
+            <form onSubmit={handleSave} className="mobile-entry-form bg-slate-50 dark:bg-slate-800/60 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-4">
               <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-3">
                 <h4 className="font-bold text-slate-900 dark:text-white text-sm">
                   {isAdding ? 'إضافة محل جديد إلى النظام' : `تعديل بيانات المحل (${editingShop?.shopId})`}

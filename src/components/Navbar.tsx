@@ -17,6 +17,8 @@ import {
   Settings,
   X,
   Sparkles,
+  Sun,
+  Moon,
 } from 'lucide-react';
 import { Shop, UserSession } from '../types';
 
@@ -42,6 +44,8 @@ interface NavbarProps {
   onLogout: () => void;
   onToggleSidebar?: () => void;
   isAdmin?: boolean;
+  theme: 'dark' | 'light';
+  onToggleTheme: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -63,6 +67,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   onLogout,
   onToggleSidebar,
   isAdmin,
+  theme,
+  onToggleTheme,
 }) => {
   const isAdminUser = isAdmin ?? (currentSession?.role === 'admin');
 
@@ -308,6 +314,16 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </div>
               )}
             </div>
+
+            <button
+              type="button"
+              onClick={onToggleTheme}
+              className="w-10 h-10 flex items-center justify-center text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white bg-slate-100/90 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-800 border border-slate-200/90 dark:border-slate-700/70 rounded-2xl transition-all active:scale-95 cursor-pointer shrink-0 shadow-2xs"
+              title={theme === 'dark' ? 'التبديل إلى الوضع النهاري' : 'التبديل إلى الوضع الليلي'}
+              aria-label={theme === 'dark' ? 'التبديل إلى الوضع النهاري' : 'التبديل إلى الوضع الليلي'}
+            >
+              {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </button>
 
             {/* Notifications Button */}
             <button

@@ -6,6 +6,7 @@
  */
 
 var ROOT_FOLDER_NAME = 'سند - صور ومستندات';
+var LOGIN_SETUP_PROPERTY = 'SANAD_LOGIN_SETUP_V1';
 
 /**
  * دالة مساعدة للحصول على جدول البيانات النشط
@@ -170,11 +171,27 @@ function migrateToMultiTenant() {
     logs.push('تم إنشاء سجل BUNN الافتراضي لربط البيانات القديمة به.');
   }
   migrateLegacyShopUsers_(ss, logs);
+  PropertiesService.getScriptProperties().setProperty(LOGIN_SETUP_PROPERTY, '1');
   return {
     success: true,
     message: 'تم الترحيل إلى Multi-Tenant بنجاح دون المساس بالبيانات القديمة.',
     logs: logs
   };
+}
+
+function ensureLoginSetup_() {
+  var props = PropertiesService.getScriptProperties();
+  if (props.getProperty(LOGIN_SETUP_PROPERTY) === '1') return;
+
+  var lock = LockService.getScriptLock();
+  lock.waitLock(30000);
+  try {
+    if (props.getProperty(LOGIN_SETUP_PROPERTY) !== '1') {
+      migrateToMultiTenant();
+    }
+  } finally {
+    lock.releaseLock();
+  }
 }
 
 /**
@@ -277,8 +294,7 @@ function doPost(e) {
 
     var ss = getSpreadsheet();
     if (action === 'login') {
-      initDatabase();
-      migrateToMultiTenant();
+      ensureLoginSetup_();
       return createJsonResponse(loginUser_(ss, payload.Username || payload.username, payload.Password || payload.password));
     }
     var session = requireSession_(payload.sessionToken || payload.token);

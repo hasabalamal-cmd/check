@@ -68,6 +68,10 @@ import { LoginModal } from './components/LoginModal';
 import { ShopManagementModal } from './components/ShopManagementModal';
 
 export default function App() {
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => (
+    localStorage.getItem('sanad_theme') === 'light' ? 'light' : 'dark'
+  ));
+
   // Multi-Tenant Session & Shops State
   const [shops, setShops] = useState<Shop[]>(() => getAvailableShops(getStoredShops()));
   const [currentSession, setSession] = useState<UserSession | null>(() => getCurrentSession());
@@ -128,12 +132,10 @@ export default function App() {
     }
   }, [isAdmin, isSettingsModalOpen, isShopManagementOpen]);
 
-  // Permanently enforce Dark Mode on documentElement
   useEffect(() => {
-    document.documentElement.classList.add('dark');
-    document.documentElement.classList.remove('light');
-    localStorage.setItem('sanad_theme', 'dark');
-  }, []);
+    document.documentElement.classList.toggle('dark', theme === 'dark');
+    localStorage.setItem('sanad_theme', theme);
+  }, [theme]);
 
   // Switch Active Shop Handler
   const handleSelectShop = (shopId: string) => {
@@ -231,15 +233,6 @@ export default function App() {
       window.removeEventListener('sanad:session-expired', expireSession);
       window.removeEventListener('sanad:api-error', showApiError);
     };
-  }, []);
-
-  // Enforce dark mode on html document element and body
-  useEffect(() => {
-    if (typeof document !== 'undefined') {
-      document.documentElement.classList.add('dark');
-      document.documentElement.classList.remove('light');
-      document.body.className = "bg-slate-950 text-slate-100 font-['Cairo',sans-serif] antialiased";
-    }
   }, []);
 
   // Run automated check scanner
@@ -732,7 +725,7 @@ export default function App() {
   ).length;
 
   return (
-    <div className="min-h-screen flex flex-col font-['Cairo',sans-serif] bg-slate-950 text-slate-100 selection:bg-emerald-500/30 selection:text-emerald-200">
+    <div className="min-h-screen flex flex-col font-['Cairo',sans-serif] bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 selection:bg-emerald-200 selection:text-emerald-900 dark:selection:bg-emerald-500/30 dark:selection:text-emerald-200">
       {gasNotification && (
         <div
           role="status"
@@ -788,6 +781,8 @@ export default function App() {
         onLogout={handleLogout}
         onToggleSidebar={() => setIsMobileSidebarOpen(true)}
         isAdmin={isAdmin}
+        theme={theme}
+        onToggleTheme={() => setTheme((current) => current === 'dark' ? 'light' : 'dark')}
       />
 
       <div className="flex-1 flex max-w-7xl w-full mx-auto">
