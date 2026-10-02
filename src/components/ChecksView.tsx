@@ -18,7 +18,8 @@ import {
   Download,
 } from 'lucide-react';
 import { CheckItem, CheckStatus, Customer, CustomerInvoice } from '../types';
-import { formatCurrency, formatArabicDate, CHECK_STATUS_CONFIG, getTodayString } from '../utils/checkCalculations';
+import { formatCurrency, formatLocalizedDate, CHECK_STATUS_CONFIG, getTodayString } from '../utils/checkCalculations';
+import { translate } from '../utils/i18n';
 
 interface ChecksViewProps {
   checks: CheckItem[];
@@ -126,10 +127,10 @@ export const ChecksView: React.FC<ChecksViewProps> = ({
             </div>
             <div>
               <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
-                الشيكات الصادرة من العملاء
+                {translate('الشيكات الصادرة من العملاء')}
               </h1>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                تسجيل ومتابعة شيكات المحلات وتواريخ الصرف التلقائية والفواتير المرتبطة
+                {translate('تسجيل ومتابعة شيكات المحلات وتواريخ الصرف التلقائية والفواتير المرتبطة')}
               </p>
             </div>
           </div>
@@ -140,7 +141,7 @@ export const ChecksView: React.FC<ChecksViewProps> = ({
           className="px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 shadow-md shadow-blue-600/25 transition-all active:scale-95 self-start sm:self-auto cursor-pointer"
         >
           <Plus className="w-4 h-4" />
-          <span>تسجيل شيك جديد</span>
+          <span>{translate('تسجيل شيك جديد')}</span>
         </button>
       </div>
 
@@ -154,7 +155,7 @@ export const ChecksView: React.FC<ChecksViewProps> = ({
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="ابحث برقم الشيك، اسم المحل، الفاتورة..."
+              placeholder={translate('بحث برقم الشيك، اسم المحل، الفاتورة...')}
               className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl pr-9 pl-3 py-2 text-slate-900 dark:text-white text-xs sm:text-sm focus:outline-none focus:border-blue-500 placeholder:text-slate-400"
             />
           </div>
@@ -166,12 +167,12 @@ export const ChecksView: React.FC<ChecksViewProps> = ({
               onChange={(e) => setStatusFilter(e.target.value)}
               className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-900 dark:text-white text-xs sm:text-sm focus:outline-none focus:border-blue-500"
             >
-              <option value="all">كل حالات الشيكات ({checks.length})</option>
-              <option value="upcoming">قادم</option>
-              <option value="due_today">مستحق اليوم</option>
-              <option value="overdue">متأخر</option>
-              <option value="cashed">تم صرفه</option>
-              <option value="cancelled">ملغي</option>
+              <option value="all">{translate('كل حالات الشيكات')} ({checks.length})</option>
+              <option value="upcoming">{translate('قادم')}</option>
+              <option value="due_today">{translate('مستحق اليوم')}</option>
+              <option value="overdue">{translate('متأخر')}</option>
+              <option value="cashed">{translate('تم صرفه')}</option>
+              <option value="cancelled">{translate('ملغي')}</option>
             </select>
           </div>
 
@@ -182,7 +183,7 @@ export const ChecksView: React.FC<ChecksViewProps> = ({
               onChange={(e) => setCustomerFilter(e.target.value)}
               className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-900 dark:text-white text-xs sm:text-sm focus:outline-none focus:border-blue-500"
             >
-              <option value="all">جميع المحلات والعملاء</option>
+              <option value="all">{translate('جميع المحلات والعملاء')}</option>
               {customers.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.name}
@@ -198,10 +199,10 @@ export const ChecksView: React.FC<ChecksViewProps> = ({
               onChange={(e) => setDateRange(e.target.value as any)}
               className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-900 dark:text-white text-xs sm:text-sm focus:outline-none focus:border-blue-500"
             >
-              <option value="all">كل التواريخ</option>
-              <option value="today">مستحق اليوم فقط</option>
-              <option value="week">خلال الأسبوع القادم</option>
-              <option value="month">خلال الشهر القادم</option>
+              <option value="all">{translate('كل التواريخ')}</option>
+              <option value="today">{translate('مستحق اليوم فقط')}</option>
+              <option value="week">{translate('خلال الأسبوع القادم')}</option>
+              <option value="month">{translate('خلال الشهر القادم')}</option>
             </select>
           </div>
         </div>
@@ -209,7 +210,7 @@ export const ChecksView: React.FC<ChecksViewProps> = ({
         {/* Status badges quick toggle */}
         <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-200 dark:border-slate-800 text-xs">
           <div className="flex flex-wrap items-center gap-1.5">
-            <span className="text-slate-500 dark:text-slate-400 text-xs ml-1">تصفية سريعة:</span>
+            <span className="text-slate-500 dark:text-slate-400 text-xs ml-1">{translate('تصفية سريعة:')}</span>
             {(['all', 'upcoming', 'due_today', 'overdue', 'cashed', 'cancelled'] as const).map((st) => {
               const label =
                 st === 'all'
@@ -237,14 +238,14 @@ export const ChecksView: React.FC<ChecksViewProps> = ({
                       : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300'
                   }`}
                 >
-                  {label} ({count})
+                  {translate(label)} ({count})
                 </button>
               );
             })}
           </div>
 
           <div className="text-slate-600 dark:text-slate-300 font-medium">
-            الإجمالي في العرض:{' '}
+            {translate('الإجمالي في العرض:')}{' '}
             <span className="text-emerald-600 dark:text-emerald-400 font-bold font-mono">
               {formatCurrency(totalFilteredAmount)}
             </span>
@@ -256,13 +257,13 @@ export const ChecksView: React.FC<ChecksViewProps> = ({
       {filteredChecks.length === 0 ? (
         <div className="bg-white dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-12 text-center space-y-3 shadow-xs">
           <CreditCard className="w-12 h-12 mx-auto text-slate-400 dark:text-slate-500" />
-          <h3 className="text-base font-bold text-slate-800 dark:text-slate-300">لا توجد شيكات مطابقة لمعايير البحث</h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400">جرب تعديل الفلاتر أو تسجيل شيك جديد.</p>
+          <h3 className="text-base font-bold text-slate-800 dark:text-slate-300">{translate('لا توجد شيكات مطابقة لمعايير البحث')}</h3>
+          <p className="text-xs text-slate-500 dark:text-slate-400">{translate('جرب تعديل الفلاتر أو تسجيل شيك جديد.')}</p>
           <button
             onClick={onAddCheck}
             className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-semibold shadow-xs"
           >
-            تسجيل شيك الآن
+            {translate('تسجيل شيك الآن')}
           </button>
         </div>
       ) : (
@@ -291,7 +292,7 @@ export const ChecksView: React.FC<ChecksViewProps> = ({
                       {chk.checkNumber}
                     </span>
                     <span className={`px-2.5 py-1 rounded-full text-xs font-bold border ${cfg.badgeBg}`}>
-                      {cfg.label}
+                      {translate(cfg.label)}
                     </span>
                   </div>
 
@@ -310,10 +311,10 @@ export const ChecksView: React.FC<ChecksViewProps> = ({
                     <div className="flex items-center justify-between">
                       <span className="text-slate-500 dark:text-slate-400 flex items-center gap-1">
                         <Calendar className="w-3.5 h-3.5" />
-                        <span>تاريخ الاستحقاق:</span>
+                        <span>{translate("تاريخ الاستحقاق:")}</span>
                       </span>
                       <span className="font-semibold text-slate-900 dark:text-white">
-                        {formatArabicDate(chk.dueDate)}
+                        {formatLocalizedDate(chk.dueDate)}
                       </span>
                     </div>
 
@@ -321,7 +322,7 @@ export const ChecksView: React.FC<ChecksViewProps> = ({
                       <div className="flex items-center justify-between">
                         <span className="text-slate-500 dark:text-slate-400 flex items-center gap-1">
                           <FileText className="w-3.5 h-3.5 text-blue-500" />
-                          <span>الفاتورة المرتبطة:</span>
+                          <span>{translate("الفاتورة المرتبطة:")}</span>
                         </span>
                         <span className="text-blue-600 dark:text-blue-300 font-mono">{chk.linkedInvoiceNumber}</span>
                       </div>
@@ -342,23 +343,23 @@ export const ChecksView: React.FC<ChecksViewProps> = ({
                       <button
                         onClick={() => onPreviewImage(chk.image!, `صورة شيك ${chk.checkNumber}`)}
                         className="p-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-xl transition-colors text-xs flex items-center gap-1 cursor-pointer"
-                        title="معاينة صورة الشيك"
+                        title={translate("معاينة صورة الشيك")}
                       >
                         <Eye className="w-3.5 h-3.5" />
-                        <span>معاينة</span>
+                        <span>{translate("معاينة")}</span>
                       </button>
                     )}
                     <button
                       onClick={() => onEditCheck(chk)}
                       className="p-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-xl transition-colors text-xs cursor-pointer"
-                      title="تعديل الشيك"
+                      title={translate("تعديل الشيك")}
                     >
                       <Edit2 className="w-3.5 h-3.5" />
                     </button>
                     <button
                       onClick={() => onDeleteCheck(chk.id)}
                       className="p-2 bg-slate-100 hover:bg-rose-100 dark:bg-slate-700 dark:hover:bg-rose-900/60 text-slate-600 hover:text-rose-600 dark:text-slate-300 dark:hover:text-rose-300 rounded-xl transition-colors text-xs cursor-pointer"
-                      title="حذف الشيك"
+                      title={translate("حذف الشيك")}
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -371,12 +372,12 @@ export const ChecksView: React.FC<ChecksViewProps> = ({
                       className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm shadow-emerald-600/20 transition-all active:scale-95 cursor-pointer"
                     >
                       <Check className="w-3.5 h-3.5" />
-                      <span>صرف الشيك</span>
+                      <span>{translate("صرف الشيك")}</span>
                     </button>
                   ) : (
                     <span className="text-[11px] text-emerald-700 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-500/10 px-2 py-0.5 rounded-lg border border-emerald-200 dark:border-emerald-500/20 flex items-center gap-1">
                       <Check className="w-3.5 h-3.5" />
-                      <span>تم الصرف</span>
+                      <span>{translate("تم الصرف")}</span>
                     </span>
                   )}
                 </div>

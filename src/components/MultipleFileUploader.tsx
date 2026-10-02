@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { translate } from '../utils/i18n';
 import {
   Upload,
   X,
@@ -41,7 +42,7 @@ export const MultipleFileUploader: React.FC<MultipleFileUploaderProps> = ({
     const fileList = Array.from(files);
     setIsUploading(true);
     setUploadError(null);
-    setUploadProgress('جاري تجهيز الملفات...');
+    setUploadProgress(translate('جاري تجهيز الملفات...'));
 
     try {
       const preparedFiles = await Promise.all(fileList.map(async (file) => {
@@ -56,7 +57,7 @@ export const MultipleFileUploader: React.FC<MultipleFileUploaderProps> = ({
 
       let uploadedAttachments: Attachment[];
       if (isGasConfigured()) {
-        setUploadProgress(`جاري رفع ${fileList.length} ملفًا إلى Google Drive...`);
+        setUploadProgress(`${translate('جاري رفع الملفات إلى Google Drive...')} (${fileList.length})`);
         const uploaded = await uploadFilesToDriveApi(
           preparedFiles.map(({ file, base64Data }) => ({
             base64Data,
@@ -85,7 +86,7 @@ export const MultipleFileUploader: React.FC<MultipleFileUploaderProps> = ({
 
       onChange([...attachments, ...uploadedAttachments]);
     } catch (err) {
-      setUploadError(err instanceof Error ? err.message : 'تعذر رفع الملفات.');
+      setUploadError(err instanceof Error ? translate(err.message) : translate('تعذر رفع الملفات.'));
     } finally {
       setIsUploading(false);
       setUploadProgress(null);
@@ -102,12 +103,12 @@ export const MultipleFileUploader: React.FC<MultipleFileUploaderProps> = ({
     <div className="space-y-2">
       <div className="flex items-center justify-between">
         <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
-          {label}
+          {translate(label)}
         </label>
         {isUploading && (
           <span className="text-[11px] text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 animate-pulse">
             <Loader2 className="w-3.5 h-3.5 animate-spin" />
-            <span>{uploadProgress || 'جاري الرفع...'}</span>
+            <span>{uploadProgress || translate('جاري الرفع...')}</span>
           </span>
         )}
       </div>
@@ -118,7 +119,7 @@ export const MultipleFileUploader: React.FC<MultipleFileUploaderProps> = ({
       {/* Upload Drop Button */}
       <label className="flex items-center justify-center gap-2.5 px-4 py-3 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800/80 dark:hover:bg-slate-700/80 border-2 border-dashed border-slate-300 dark:border-slate-700 hover:border-emerald-500/50 rounded-2xl cursor-pointer text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-all text-xs font-medium group">
         <Upload className="w-4 h-4 text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform" />
-        <span>اختر صورة واحدة أو عدة صور / ملفات PDF</span>
+        <span>{translate("اختر صورة واحدة أو عدة صور / ملفات PDF")}</span>
         <input
           type="file"
           multiple
@@ -134,7 +135,7 @@ export const MultipleFileUploader: React.FC<MultipleFileUploaderProps> = ({
         <div className="space-y-1.5 pt-1 max-h-48 overflow-y-auto pr-1">
           <div className="text-[11px] font-semibold text-slate-600 dark:text-slate-400 flex items-center justify-between">
             <span>الملفات المرفقة ({attachments.length}):</span>
-            <span className="text-[10px] text-slate-400 dark:text-slate-500">انقر للمعاينة أو الحذف</span>
+            <span className="text-[10px] text-slate-400 dark:text-slate-500">{translate("انقر للمعاينة أو الحذف")}</span>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -184,7 +185,7 @@ export const MultipleFileUploader: React.FC<MultipleFileUploaderProps> = ({
                         type="button"
                         onClick={() => onPreview(att.url, att.name)}
                         className="p-1.5 text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors cursor-pointer"
-                        title="معاينة"
+                        title={translate("معاينة")}
                       >
                         <Eye className="w-3.5 h-3.5" />
                       </button>
@@ -193,7 +194,7 @@ export const MultipleFileUploader: React.FC<MultipleFileUploaderProps> = ({
                       type="button"
                       onClick={() => handleRemove(idx)}
                       className="p-1.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg transition-colors cursor-pointer"
-                      title="حذف الملف"
+                      title={translate("حذف الملف")}
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>

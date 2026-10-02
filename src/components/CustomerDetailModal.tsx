@@ -1,4 +1,5 @@
 import React from 'react';
+import { translate } from '../utils/i18n';
 import {
   X,
   Store,
@@ -17,7 +18,7 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { Customer, CheckItem, CustomerInvoice } from '../types';
-import { formatCurrency, formatArabicDate, CHECK_STATUS_CONFIG } from '../utils/checkCalculations';
+import { formatCurrency, formatLocalizedDate, CHECK_STATUS_CONFIG } from '../utils/checkCalculations';
 
 interface CustomerDetailModalProps {
   isOpen: boolean;
@@ -86,7 +87,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
               <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400 mt-1 flex-wrap">
                 <span className="flex items-center gap-1">
                   <User className="w-3.5 h-3.5 text-slate-400" />
-                  <span>المسؤول: {customer.contactPerson}</span>
+                  <span>{translate('المسؤول:')} {customer.contactPerson}</span>
                 </span>
                 <span>•</span>
                 <span className="flex items-center gap-1">
@@ -103,16 +104,16 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
               target="_blank"
               rel="noopener noreferrer"
               className="p-2.5 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-600/20 dark:hover:bg-emerald-600/30 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
-              title="محادثة واتساب"
+              title={translate("محادثة واتساب")}
             >
               <MessageCircle className="w-4 h-4" />
-              <span className="hidden sm:inline">واتساب</span>
+              <span className="hidden sm:inline">{translate("واتساب")}</span>
             </a>
             <button
               onClick={() => onEditCustomer(customer)}
               className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold rounded-xl border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer"
             >
-              تعديل العميل
+              {translate("تعديل العميل")}
             </button>
             <button
               onClick={onClose}
@@ -128,42 +129,42 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
           {/* Quick Stats Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80">
-              <div className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">إجمالي الفواتير</div>
+              <div className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">{translate("إجمالي الفواتير")}</div>
               <div className="text-xl font-black text-slate-900 dark:text-white font-mono mt-1">
                 {formatCurrency(totalInvoiced)}
               </div>
               <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
-                {customerInvoices.length} فاتورة
+                {translate(`${customerInvoices.length} فاتورة`)}
               </div>
             </div>
 
             <div className="p-4 rounded-2xl bg-blue-50/50 dark:bg-slate-800/80 border border-blue-200 dark:border-blue-500/30">
-              <div className="text-[11px] text-blue-700 dark:text-blue-400 font-medium">الشيكات القادمة</div>
+              <div className="text-[11px] text-blue-700 dark:text-blue-400 font-medium">{translate("الشيكات القادمة")}</div>
               <div className="text-xl font-black text-blue-700 dark:text-blue-300 font-mono mt-1">
                 {formatCurrency(upcomingAmount)}
               </div>
               <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
-                {upcomingChecks.length} شيك قادم
+                {translate(`${upcomingChecks.length} شيك قادم`)}
               </div>
             </div>
 
             <div className="p-4 rounded-2xl bg-rose-50/50 dark:bg-slate-800/80 border border-rose-200 dark:border-rose-500/30">
-              <div className="text-[11px] text-rose-700 dark:text-rose-400 font-medium">الشيكات المتأخرة</div>
+              <div className="text-[11px] text-rose-700 dark:text-rose-400 font-medium">{translate("الشيكات المتأخرة")}</div>
               <div className="text-xl font-black text-rose-700 dark:text-rose-300 font-mono mt-1">
                 {formatCurrency(overdueAmount)}
               </div>
               <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
-                {overdueChecks.length} شيك متأخر
+                {translate(`${overdueChecks.length} شيك متأخر`)}
               </div>
             </div>
 
             <div className="p-4 rounded-2xl bg-emerald-50/50 dark:bg-slate-800/80 border border-emerald-200 dark:border-emerald-500/30">
-              <div className="text-[11px] text-emerald-700 dark:text-emerald-400 font-medium">الشيكات المدفوعة</div>
+              <div className="text-[11px] text-emerald-700 dark:text-emerald-400 font-medium">{translate("الشيكات المدفوعة")}</div>
               <div className="text-xl font-black text-emerald-700 dark:text-emerald-400 font-mono mt-1">
                 {formatCurrency(paidAmount)}
               </div>
               <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
-                {paidChecks.length} شيك تم صرفه
+                {translate(`${paidChecks.length} شيك تم صرفه`)}
               </div>
             </div>
           </div>
@@ -173,7 +174,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
             <div className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-800 text-xs text-slate-700 dark:text-slate-300 flex items-center justify-between">
               <span className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400">
                 <MapPin className="w-4 h-4 text-slate-400" />
-                <span>العنوان: {customer.address}</span>
+                <span>{translate('العنوان:')} {customer.address}</span>
               </span>
               {customer.notes && <span className="text-slate-500 dark:text-slate-400 italic">"{customer.notes}"</span>}
             </div>
@@ -187,7 +188,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                   <FileSpreadsheet className="w-4 h-4" />
                 </div>
                 <h3 className="font-bold text-slate-900 dark:text-white text-sm">
-                  فواتير التوريد للمحل ({customerInvoices.length})
+                  {translate('فواتير التوريد للمحل')} ({customerInvoices.length})
                 </h3>
               </div>
               <button
@@ -195,13 +196,13 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                 className="px-3 py-1.5 bg-cyan-50 hover:bg-cyan-100 dark:bg-cyan-600/20 dark:hover:bg-cyan-600/30 text-cyan-700 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-500/30 rounded-xl text-xs font-semibold flex items-center gap-1 transition-colors cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5" />
-                <span>إصدار فاتورة</span>
+                <span>{translate("إصدار فاتورة")}</span>
               </button>
             </div>
 
             {customerInvoices.length === 0 ? (
               <div className="p-6 bg-slate-50 dark:bg-slate-800/30 rounded-2xl text-center text-xs text-slate-500">
-                لا توجد فواتير مسجلة لهذا العميل بعد.
+                {translate("لا توجد فواتير مسجلة لهذا العميل بعد.")}
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -213,7 +214,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                     <div>
                       <div className="font-mono font-bold text-cyan-700 dark:text-cyan-300">{inv.invoiceNumber}</div>
                       <div className="text-slate-500 dark:text-slate-400 text-[11px] mt-0.5">
-                        التاريخ: {formatArabicDate(inv.invoiceDate)}
+                        التاريخ: {formatLocalizedDate(inv.invoiceDate)}
                       </div>
                       {inv.notes && (
                         <div className="text-slate-500 text-[10px] mt-1 line-clamp-1">{inv.notes}</div>
@@ -228,7 +229,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                           onClick={() => onPreviewImage(inv.image!, `فاتورة ${inv.invoiceNumber}`)}
                           className="text-[10px] text-cyan-600 dark:text-cyan-400 hover:underline mt-1 block cursor-pointer"
                         >
-                          معاينة الفاتورة
+                          {translate("معاينة الفاتورة")}
                         </button>
                       )}
                     </div>
@@ -246,7 +247,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                   <CreditCard className="w-4 h-4" />
                 </div>
                 <h3 className="font-bold text-slate-900 dark:text-white text-sm">
-                  شيكات المحل المستلمة ({customerChecks.length})
+                  {translate('شيكات المحل المستلمة')} ({customerChecks.length})
                 </h3>
               </div>
               <button
@@ -254,13 +255,13 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                 className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 dark:bg-blue-600/20 dark:hover:bg-blue-600/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-500/30 rounded-xl text-xs font-semibold flex items-center gap-1 transition-colors cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5" />
-                <span>تسجيل شيك</span>
+                <span>{translate("تسجيل شيك")}</span>
               </button>
             </div>
 
             {customerChecks.length === 0 ? (
               <div className="p-6 bg-slate-50 dark:bg-slate-800/30 rounded-2xl text-center text-xs text-slate-500">
-                لا توجد شيكات مسجلة لهذا العميل حتى الآن.
+                {translate("لا توجد شيكات مسجلة لهذا العميل حتى الآن.")}
               </div>
             ) : (
               <div className="space-y-2.5">
@@ -281,7 +282,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                           </span>
                         </div>
                         <div className="text-slate-500 dark:text-slate-400 text-[11px]">
-                          تاريخ الاستحقاق: {formatArabicDate(chk.dueDate)}
+                          تاريخ الاستحقاق: {formatLocalizedDate(chk.dueDate)}
                           {chk.linkedInvoiceNumber && (
                             <span className="mr-2 text-cyan-600 dark:text-cyan-300">
                               (مرتبط بفاتورة {chk.linkedInvoiceNumber})
@@ -298,9 +299,9 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                           <button
                             onClick={() => onPreviewImage(chk.image!, `شيك ${chk.checkNumber}`)}
                             className="p-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-lg text-xs cursor-pointer"
-                            title="معاينة الشيك"
+                            title={translate("معاينة الشيك")}
                           >
-                            معاينة
+                            {translate("معاينة")}
                           </button>
                         )}
                         {!isPaid && (
@@ -308,7 +309,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                             onClick={() => onCashCheck(chk.id)}
                             className="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold transition-colors cursor-pointer"
                           >
-                            صرف الشيك
+                            {translate("صرف الشيك")}
                           </button>
                         )}
                       </div>

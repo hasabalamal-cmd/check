@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { translate } from '../utils/i18n';
 import {
   X,
   Settings,
@@ -107,15 +108,15 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           <div className="w-14 h-14 rounded-2xl bg-rose-500/15 text-rose-500 mx-auto flex items-center justify-center">
             <Lock className="w-7 h-7" />
           </div>
-          <h3 className="text-xl font-bold text-slate-900 dark:text-white">صلاحية محظورة - للمدير فقط</h3>
+          <h3 className="text-xl font-bold text-slate-900 dark:text-white">{translate("صلاحية محظورة - للمدير فقط")}</h3>
           <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-            إعدادات النظام وإدارة المحلات المتعددة وربط قواعد بيانات Google Sheets و Google Drive متاحة حصرياً للمدير (Admin).
+            {translate("إعدادات النظام وإدارة المحلات المتعددة وربط قواعد بيانات Google Sheets و Google Drive متاحة حصرياً للمدير (Admin).")}
           </p>
           <button
             onClick={onClose}
             className="w-full py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-xl text-xs font-bold transition-colors cursor-pointer"
           >
-            إغلاق النافذة
+            {translate("إغلاق النافذة")}
           </button>
         </div>
       </div>
@@ -146,7 +147,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
   const handleRunMigration = async () => {
     if (!url.trim()) {
-      setMigrationResult('يرجى حفظ واختبار رابط Google Apps Script أولاً.');
+      setMigrationResult(translate('يرجى حفظ واختبار رابط Google Apps Script أولاً.'));
       return;
     }
     setIsMigrating(true);
@@ -154,13 +155,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     try {
       const res = await runMigrationInGas();
       if (res.success) {
-        setMigrationResult(res.message || 'تم تحديث وترحيل الجداول في Google Sheets بنجاح!');
+        setMigrationResult(translate(res.message || 'تم تحديث وترحيل الجداول في Google Sheets بنجاح!'));
         onConnectionSuccess();
       } else {
-        setMigrationResult('فشل في تنفيذ الترحيل.');
+        setMigrationResult(translate('فشل في تنفيذ الترحيل.'));
       }
     } catch (err: any) {
-      setMigrationResult(err.message || 'حدث خطأ أثناء الترحيل.');
+      setMigrationResult(translate(err.message || 'حدث خطأ أثناء الترحيل.'));
     } finally {
       setIsMigrating(false);
     }
@@ -209,16 +210,16 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
     const cleanShopId = formShopId.trim().toUpperCase();
     if (!cleanShopId) {
-      setShopError('يرجى إدخال معرف المحل (ShopID)');
+      setShopError(translate('يرجى إدخال معرف المحل (ShopID)'));
       return;
     }
 
     if (!formShopName.trim()) {
-      setShopError('يرجى إدخال اسم المحل');
+      setShopError(translate('يرجى إدخال اسم المحل'));
       return;
     }
     if (isAddingShop && formPassword.length < 10) {
-      setShopError('كلمة المرور مطلوبة ويجب ألا تقل عن 10 أحرف.');
+      setShopError(translate('كلمة المرور مطلوبة ويجب ألا تقل عن 10 أحرف.'));
       return;
     }
 
@@ -226,7 +227,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     if (isAddingShop) {
       const exists = shops.some((s) => s.shopId.toUpperCase() === cleanShopId);
       if (exists) {
-        setShopError(`معرف المحل "${cleanShopId}" موجود مسبقاً، يرجى اختيار معرف فريد.`);
+        setShopError(translate('معرف المحل مستخدم مسبقاً، يرجى اختيار معرف فريد.'));
         return;
       }
     }
@@ -259,10 +260,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       onShopsUpdated(updated);
       saveStoredShops(updated);
 
-      setShopSuccess(`تم ${editingShop ? 'تعديل' : 'إضافة'} المحل بنجاح!`);
+      setShopSuccess(translate(editingShop ? 'تم تعديل المحل بنجاح!' : 'تمت إضافة المحل بنجاح!'));
       resetShopForm();
     } catch (err: any) {
-      setShopError(err?.message || 'فشل في حفظ المحل.');
+      setShopError(translate(err?.message || 'فشل في حفظ المحل.'));
     } finally {
       setIsSavingShop(false);
     }
@@ -277,22 +278,22 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       onShopsUpdated(updated);
       saveStoredShops(updated);
     } catch (err) {
-      setShopError(err instanceof Error ? err.message : 'تعذر تحديث حالة المحل.');
+      setShopError(err instanceof Error ? translate(err.message) : translate('تعذر تحديث حالة المحل.'));
     }
   };
 
   const handleDeleteShop = async (targetId: string) => {
     if (shops.length <= 1) {
-      alert('لا يمكن حذف المحل الأخير. يجب الإبقاء على محل واحد على الأقل.');
+      alert(translate('لا يمكن حذف المحل الأخير. يجب الإبقاء على محل واحد على الأقل.'));
       return;
     }
 
     if (targetId === currentShopId) {
-      alert('لا يمكن حذف المحل المختار حالياً. يرجى التبديل إلى محل آخر أولاً.');
+      alert(translate('لا يمكن حذف المحل المختار حالياً. يرجى التبديل إلى محل آخر أولاً.'));
       return;
     }
 
-    const conf = window.confirm(`سيتم تعطيل المحل "${targetId}" مع الإبقاء على بياناته. هل تريد المتابعة؟`);
+    const conf = window.confirm(`${translate('سيتم تعطيل المحل')} "${targetId}" ${translate('مع الإبقاء على بياناته. هل تريد المتابعة؟')}`);
     if (!conf) return;
 
     try {
@@ -301,7 +302,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       onShopsUpdated(updated);
       saveStoredShops(updated);
     } catch (err) {
-      setShopError(err instanceof Error ? err.message : 'تعذر تعطيل المحل.');
+      setShopError(err instanceof Error ? translate(err.message) : translate('تعذر تعطيل المحل.'));
     }
   };
 
@@ -315,9 +316,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               <Settings className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-bold text-lg text-slate-900 dark:text-white">إعدادات النظام (Settings)</h3>
+              <h3 className="font-bold text-lg text-slate-900 dark:text-white">{translate("إعدادات النظام (Settings)")}</h3>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                إدارة المحلات المتعددة وربط قواعد بيانات Google Sheets و Google Drive
+                {translate("إدارة المحلات المتعددة وربط قواعد بيانات Google Sheets و Google Drive")}
               </p>
             </div>
           </div>
@@ -351,7 +352,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             }`}
           >
             <Database className="w-4 h-4" />
-            <span>ربط خادم Google Sheets & Drive</span>
+            <span>{translate("ربط خادم Google Sheets & Drive")}</span>
           </button>
         </div>
 
@@ -387,7 +388,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       onClick={resetShopForm}
                       className="text-xs text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white cursor-pointer"
                     >
-                      إلغاء
+                      {translate("إلغاء")}
                     </button>
                   </div>
 
@@ -395,7 +396,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     {/* ShopID */}
                     <div>
                       <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                        معرف المحل (ShopID) <span className="text-rose-500">* (فريد ولا يتكرر)</span>
+                        معرف المحل (ShopID) <span className="text-rose-500">{translate("* (فريد ولا يتكرر)")}</span>
                       </label>
                       <input
                         type="text"
@@ -403,7 +404,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                         disabled={!!editingShop}
                         value={formShopId}
                         onChange={(e) => setFormShopId(e.target.value.toUpperCase())}
-                        placeholder="مثال: BUNN, ABC001"
+                        placeholder={translate("مثال: BUNN, ABC001")}
                         className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-900 dark:text-white font-mono text-xs sm:text-sm focus:outline-none focus:border-emerald-500 disabled:opacity-60 placeholder:text-slate-400 dark:placeholder:text-slate-500"
                       />
                     </div>
@@ -418,7 +419,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                         required
                         value={formShopName}
                         onChange={(e) => setFormShopName(e.target.value)}
-                        placeholder="مثال: متجر Bunn للقهوة"
+                        placeholder={translate("مثال: متجر Bunn للقهوة")}
                         className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-900 dark:text-white text-xs sm:text-sm focus:outline-none focus:border-emerald-500 placeholder:text-slate-400 dark:placeholder:text-slate-500"
                       />
                     </div>
@@ -428,7 +429,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     {/* Username */}
                     <div>
                       <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                        اسم المستخدم للدخول
+                        {translate("اسم المستخدم للدخول")}
                       </label>
                       <div className="relative">
                         <User className="w-3.5 h-3.5 text-slate-400 absolute right-3 top-2.5" />
@@ -436,7 +437,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                           type="text"
                           value={formUsername}
                           onChange={(e) => setFormUsername(e.target.value)}
-                          placeholder="مثال: bunn"
+                          placeholder={translate("مثال: bunn")}
                           className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl pr-9 pl-3 py-2 text-slate-900 dark:text-white text-xs sm:text-sm focus:outline-none focus:border-emerald-500 font-mono placeholder:text-slate-400 dark:placeholder:text-slate-500"
                         />
                       </div>
@@ -445,7 +446,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     {/* Password */}
                     <div>
                       <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                        كلمة المرور (10 أحرف على الأقل)
+                        {translate("كلمة المرور (10 أحرف على الأقل)")}
                       </label>
                       <div className="relative">
                         <Lock className="w-3.5 h-3.5 text-slate-400 absolute right-3 top-2.5" />
@@ -455,7 +456,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                           minLength={isAddingShop ? 10 : undefined}
                           value={formPassword}
                           onChange={(e) => setFormPassword(e.target.value)}
-                          placeholder="أنشئ كلمة مرور قوية"
+                          placeholder={translate("أنشئ كلمة مرور قوية")}
                           className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl pr-9 pl-3 py-2 text-slate-900 dark:text-white text-xs sm:text-sm focus:outline-none focus:border-emerald-500 font-mono placeholder:text-slate-400 dark:placeholder:text-slate-500"
                         />
                       </div>
@@ -466,13 +467,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     {/* Contact Person */}
                     <div>
                       <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                        اسم المسؤول
+                        {translate("اسم المسؤول")}
                       </label>
                       <input
                         type="text"
                         value={formContactName}
                         onChange={(e) => setFormContactName(e.target.value)}
-                        placeholder="أبو فهد العتيبي"
+                        placeholder={translate("أبو فهد العتيبي")}
                         className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-900 dark:text-white text-xs sm:text-sm focus:outline-none focus:border-emerald-500 placeholder:text-slate-400 dark:placeholder:text-slate-500"
                       />
                     </div>
@@ -480,7 +481,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     {/* Phone */}
                     <div>
                       <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                        رقم الجوال
+                        {translate("رقم الجوال")}
                       </label>
                       <div className="relative">
                         <Phone className="w-3.5 h-3.5 text-slate-400 absolute right-3 top-2.5" />
@@ -497,7 +498,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     {/* Email */}
                     <div>
                       <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                        البريد الإلكتروني
+                        {translate("البريد الإلكتروني")}
                       </label>
                       <div className="relative">
                         <Mail className="w-3.5 h-3.5 text-slate-400 absolute right-3 top-2.5" />
@@ -516,28 +517,28 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     {/* Status */}
                     <div>
                       <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                        حالة المحل
+                        {translate("حالة المحل")}
                       </label>
                       <select
                         value={formStatus}
                         onChange={(e) => setFormStatus(e.target.value as 'active' | 'inactive')}
                         className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-900 dark:text-white text-xs sm:text-sm focus:outline-none focus:border-emerald-500"
                       >
-                        <option value="active">مفعّل (نشط)</option>
-                        <option value="inactive">معطّل (غير نشط)</option>
+                        <option value="active">{translate("مفعّل (نشط)")}</option>
+                        <option value="inactive">{translate("معطّل (غير نشط)")}</option>
                       </select>
                     </div>
 
                     {/* Notes */}
                     <div>
                       <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                        ملاحظات
+                        {translate("ملاحظات")}
                       </label>
                       <input
                         type="text"
                         value={formNotes}
                         onChange={(e) => setFormNotes(e.target.value)}
-                        placeholder="أي ملاحظات خاصة بالمحل..."
+                        placeholder={translate("أي ملاحظات خاصة بالمحل...")}
                         className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-900 dark:text-white text-xs sm:text-sm focus:outline-none focus:border-emerald-500 placeholder:text-slate-400 dark:placeholder:text-slate-500"
                       />
                     </div>
@@ -549,7 +550,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       onClick={resetShopForm}
                       className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-medium cursor-pointer"
                     >
-                      إلغاء
+                      {translate("إلغاء")}
                     </button>
                     <button
                       type="submit"
@@ -564,7 +565,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               ) : (
                 <div className="flex items-center justify-between">
                   <div>
-                    <h4 className="font-bold text-slate-900 dark:text-white text-sm">قائمة المحلات المسجلة في النظام</h4>
+                    <h4 className="font-bold text-slate-900 dark:text-white text-sm">{translate("قائمة المحلات المسجلة في النظام")}</h4>
                     <p className="text-xs text-slate-500 dark:text-slate-400">
                       كل محل له بياناته المستقلة المعزولة تماماً بـ <span className="font-mono text-emerald-600 dark:text-emerald-400 font-semibold">ShopID</span>
                     </p>
@@ -574,7 +575,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 shadow-sm shadow-emerald-600/20 transition-all cursor-pointer"
                   >
                     <Plus className="w-4 h-4" />
-                    <span>إضافة محل جديد</span>
+                    <span>{translate("إضافة محل جديد")}</span>
                   </button>
                 </div>
               )}
@@ -615,7 +616,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                               </span>
                               {isCurrent && (
                                 <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 font-bold">
-                                  المحل الحالي
+                                  {translate("المحل الحالي")}
                                 </span>
                               )}
                               <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
@@ -658,9 +659,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                                 onClose();
                               }}
                               className="px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-600/20 dark:hover:bg-emerald-600 text-emerald-700 dark:text-emerald-300 hover:text-emerald-900 dark:hover:text-white rounded-xl text-xs font-semibold transition-colors cursor-pointer"
-                              title="التبديل إلى هذا المحل"
+                              title={translate("التبديل إلى هذا المحل")}
                             >
-                              اختيار
+                              {translate("اختيار")}
                             </button>
                           )}
 
@@ -679,7 +680,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                           <button
                             onClick={() => startEditShop(s)}
                             className="p-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700/60 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl transition-colors cursor-pointer"
-                            title="تعديل بيانات المحل"
+                            title={translate("تعديل بيانات المحل")}
                           >
                             <Edit2 className="w-3.5 h-3.5" />
                           </button>
@@ -688,7 +689,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                             onClick={() => handleDeleteShop(s.shopId)}
                             disabled={shops.length <= 1 || s.shopId === currentShopId}
                             className="p-2 bg-rose-50 hover:bg-rose-100 dark:bg-rose-500/10 dark:hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 rounded-xl transition-colors disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
-                            title="حذف المحل"
+                            title={translate("حذف المحل")}
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
@@ -706,7 +707,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             <form onSubmit={handleTestAndSave} className="space-y-5">
               <div>
                 <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                  رابط تطبيق الويب (Google Apps Script Web App URL)
+                  {translate("رابط تطبيق الويب (Google Apps Script Web App URL)")}
                 </label>
                 <input
                   type="url"
@@ -747,10 +748,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     <div>
                       <h4 className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
                         <Layers className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                        <span>ترقية وتهيئة جداول Google Sheets لنظام Multi-Tenant</span>
+                        <span>{translate("ترقية وتهيئة جداول Google Sheets لنظام Multi-Tenant")}</span>
                       </h4>
                       <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                        إضافة عمود ShopID وإنشاء جدول المحلات Shops دون حذف أو تعديل أي سجلات قديمة.
+                        {translate("إضافة عمود ShopID وإنشاء جدول المحلات Shops دون حذف أو تعديل أي سجلات قديمة.")}
                       </p>
                     </div>
                     <button
@@ -764,7 +765,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       ) : (
                         <CloudUpload className="w-3.5 h-3.5" />
                       )}
-                      <span>تشغيل الترحيل الآمن</span>
+                      <span>{translate("تشغيل الترحيل الآمن")}</span>
                     </button>
                   </div>
                   {migrationResult && (
@@ -780,7 +781,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
                     <Folder className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                    <span>ملف الكود المحدث في المشروع: google-apps-script/Code.gs</span>
+                    <span>{translate("ملف الكود المحدث في المشروع: google-apps-script/Code.gs")}</span>
                   </span>
                 </div>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
@@ -795,7 +796,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   onClick={onClose}
                   className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-xs sm:text-sm font-medium transition-colors cursor-pointer"
                 >
-                  إغلاق
+                  {translate("إغلاق")}
                 </button>
                 <button
                   type="submit"
@@ -805,12 +806,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   {isTesting ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>جاري اختبار الاتصال...</span>
+                      <span>{translate("جاري اختبار الاتصال...")}</span>
                     </>
                   ) : (
                     <>
                       <CheckCircle2 className="w-4 h-4" />
-                      <span>حفظ واختبار الاتصال</span>
+                      <span>{translate("حفظ واختبار الاتصال")}</span>
                     </>
                   )}
                 </button>

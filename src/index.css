@@ -1,6 +1,14 @@
 @import "tailwindcss";
 @custom-variant dark (&:where(.dark, .dark *));
 
+html[dir="ltr"] [class~="text-right"] {
+  text-align: left;
+}
+
+html[dir="ltr"] [class~="text-left"] {
+  text-align: right;
+}
+
 @layer base {
   /* Smooth theme transitions */
   * {

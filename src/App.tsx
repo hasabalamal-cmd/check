@@ -14,9 +14,11 @@ import {
   evaluateCheckNotifications,
   formatCurrency,
   formatArabicDate,
+  formatLocalizedDate,
   sortAlertsByClosest,
 } from './utils/checkCalculations';
 import { isReceiptReceived } from './utils/receiptStatus';
+import { getLanguage, saveLanguage, translate, type Language } from './utils/i18n';
 import { getLocalTestData, localTestShop } from './services/localTestData';
 import {
   getCurrentSession,
@@ -70,6 +72,7 @@ import { LoginModal } from './components/LoginModal';
 import { ShopManagementModal } from './components/ShopManagementModal';
 
 export default function App() {
+  const [language, setLanguage] = useState<Language>(() => getLanguage());
   const [theme, setTheme] = useState<'dark' | 'light'>(() => (
     localStorage.getItem('sanad_theme_preference_v2') === 'dark' ? 'dark' : 'light'
   ));
@@ -148,6 +151,12 @@ export default function App() {
     document.documentElement.classList.toggle('dark', theme === 'dark');
     localStorage.setItem('sanad_theme_preference_v2', theme);
   }, [theme]);
+
+  useEffect(() => {
+    document.documentElement.lang = language;
+    document.documentElement.dir = language === 'ar' ? 'rtl' : 'ltr';
+    saveLanguage(language);
+  }, [language]);
 
   // Switch Active Shop Handler
   const handleSelectShop = (shopId: string) => {
@@ -289,9 +298,11 @@ export default function App() {
         if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
           filteredNew.forEach((alert) => {
             try {
-              new Notification(`[${currentShopName}] تنبيه شيك ${alert.daysRemaining <= 0 ? 'مستحق' : 'قادم'}: ${alert.storeName}`, {
-                body: `المبلغ: ${formatCurrency(alert.amount)}\nتاريخ الاستحقاق: ${formatArabicDate(alert.dueDate)}\n${
-                  alert.daysRemaining > 0 ? `متبقي ${alert.daysRemaining} أيام` : 'مستحق اليوم أو متأخر'
+              new Notification(`[${currentShopName}] ${translate('تنبيه شيك')} ${translate(alert.daysRemaining <= 0 ? 'مستحق' : 'قادم')}: ${alert.storeName}`, {
+                body: `${translate('المبلغ:')} ${formatCurrency(alert.amount)}\n${translate('تاريخ الاستحقاق:')} ${formatLocalizedDate(alert.dueDate)}\n${
+                  alert.daysRemaining > 0
+                    ? translate(`متبقي ${alert.daysRemaining} أيام`)
+                    : translate('مستحق اليوم أو متأخر')
                 }`,
                 icon: '/favicon.ico',
               });
@@ -768,6 +779,14 @@ export default function App() {
     setActiveShopId(session.currentShopId);
   };
 
+  const handleToggleLanguage = () => {
+    setLanguage((current) => {
+      const next = current === 'ar' ? 'en' : 'ar';
+      saveLanguage(next);
+      return next;
+    });
+  };
+
   // Badge calculations
   const unreadAlertsCount = notifications.filter((n) => !n.isRead).length;
   const unreceivedInvoicesCount = [
@@ -792,10 +811,14 @@ export default function App() {
       <LoginModal
         isOpen={!currentSession}
         onLoginSuccess={handleLoginSuccess}
+        language={language}
+        onToggleLanguage={handleToggleLanguage}
       />
 
       {/* Top Navigation Bar with Shop Selector & Cloud Status */}
       <Navbar
+        language={language}
+        onToggleLanguage={handleToggleLanguage}
         currentSession={currentSession}
         currentShop={currentShop}
         availableShops={availableShops}

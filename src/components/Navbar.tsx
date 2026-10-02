@@ -20,8 +20,11 @@ import {
   Moon,
 } from 'lucide-react';
 import { Shop, UserSession } from '../types';
+import { translate, type Language } from '../utils/i18n';
 
 interface NavbarProps {
+  language: Language;
+  onToggleLanguage: () => void;
   currentSession: UserSession | null;
   currentShop: Shop | null;
   availableShops: Shop[];
@@ -47,6 +50,8 @@ interface NavbarProps {
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
+  language,
+  onToggleLanguage,
   currentSession,
   currentShop,
   availableShops,
@@ -91,8 +96,8 @@ export const Navbar: React.FC<NavbarProps> = ({
               <button
                 onClick={onToggleSidebar}
                 className="lg:hidden w-10 h-10 flex items-center justify-center text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white rounded-2xl bg-slate-100/90 hover:bg-slate-200/90 dark:bg-slate-800/80 dark:hover:bg-slate-700/80 border border-slate-200 dark:border-slate-700/70 transition-all active:scale-95 shrink-0 cursor-pointer shadow-2xs"
-                title="فتح القائمة الجانبية"
-                aria-label="القائمة الجانبية"
+                title={translate('فتح القائمة الجانبية')}
+                aria-label={translate('القائمة الجانبية')}
               >
                 <Menu className="w-5 h-5 stroke-[2.2]" />
               </button>
@@ -103,8 +108,8 @@ export const Navbar: React.FC<NavbarProps> = ({
               <button
                 onClick={() => setShowShopDropdown(!showShopDropdown)}
                 className="flex items-center gap-2 p-1 sm:px-2.5 sm:py-1.5 rounded-2xl bg-slate-100/90 hover:bg-slate-200/80 dark:bg-slate-800/80 dark:hover:bg-slate-800 text-right transition-all border border-slate-200/90 dark:border-slate-700/80 min-w-0 group cursor-pointer active:scale-98 shadow-2xs"
-                title="تغيير المحل أو الحساب النشط"
-                aria-label="اختيار المحل الحالي"
+                title={translate('تغيير المحل أو الحساب النشط')}
+                aria-label={translate('اختيار المحل الحالي')}
               >
                 {/* Active Shop Initial Avatar */}
                 <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-br from-emerald-600 via-teal-600 to-emerald-500 text-white font-black text-sm sm:text-base flex items-center justify-center shadow-xs shadow-emerald-500/25 shrink-0">
@@ -123,7 +128,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   </div>
                   <div className="flex items-center gap-1 text-[10px] text-slate-500 dark:text-slate-400 truncate hidden sm:flex">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
-                    <span>حساب المحل النشط</span>
+                    <span>{translate('حساب المحل النشط')}</span>
                   </div>
                 </div>
 
@@ -143,9 +148,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                   />
                   <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl py-2 z-50 text-right animate-in fade-in slide-in-from-top-2">
                     <div className="px-4 py-2 text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                      <span>اختيار المحل / الحساب النشط</span>
+                      <span>{translate('اختيار المحل / الحساب النشط')}</span>
                       <span className="font-mono text-[10px] text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-500/10 px-1.5 py-0.5 rounded">
-                        {availableShops.length} محلات
+                        {availableShops.length} {translate('محلات')}
                       </span>
                     </div>
 
@@ -204,7 +209,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                           className="w-full py-2 px-3 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-600/15 dark:hover:bg-emerald-600/25 text-emerald-700 dark:text-emerald-300 text-xs font-semibold rounded-xl flex items-center justify-center gap-2 transition-colors cursor-pointer"
                         >
                           <Store className="w-3.5 h-3.5" />
-                          <span>إدارة وإضافة المحلات (الإعدادات)</span>
+                          <span>{translate('إدارة وإضافة المحلات (الإعدادات)')}</span>
                         </button>
                       </div>
                     )}
@@ -224,11 +229,11 @@ export const Navbar: React.FC<NavbarProps> = ({
               <button
                 onClick={() => setShowAddMenu(!showAddMenu)}
                 className="h-10 px-2.5 sm:px-3.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs sm:text-sm font-bold rounded-2xl flex items-center justify-center gap-1.5 shadow-sm shadow-emerald-600/30 transition-all active:scale-95 cursor-pointer shrink-0"
-                title="إضافة عنصر مالي جديد"
-                aria-label="إجراء جديد"
+                title={translate('إضافة عنصر مالي جديد')}
+                aria-label={translate('إجراء جديد')}
               >
                 <Plus className="w-4 h-4 stroke-[2.5]" />
-                <span className="hidden sm:inline font-bold">إضافة</span>
+                <span className="hidden sm:inline font-bold">{translate('إضافة')}</span>
                 <ChevronDown className="w-3.5 h-3.5 opacity-80 hidden sm:inline" />
               </button>
 
@@ -241,7 +246,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   />
                   <div className="absolute left-0 mt-2 w-64 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl py-2 z-50 text-right animate-in fade-in slide-in-from-top-2">
                     <div className="px-4 py-1.5 text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider border-b border-slate-100 dark:border-slate-800">
-                      إجراء سريع جديد
+                      {translate('إجراء سريع جديد')}
                     </div>
 
                     <button
@@ -255,8 +260,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                         <CreditCard className="w-4 h-4" />
                       </div>
                       <div className="text-right min-w-0">
-                        <p className="font-bold">تسجيل شيك جديد</p>
-                        <p className="text-[10px] text-slate-400">شيك صادر للعميل أو المورد</p>
+                        <p className="font-bold">{translate('تسجيل شيك جديد')}</p>
+                        <p className="text-[10px] text-slate-400">{translate('شيك صادر للعميل أو المورد')}</p>
                       </div>
                     </button>
 
@@ -271,8 +276,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                         <Layers className="w-4 h-4" />
                       </div>
                       <div className="text-right min-w-0">
-                        <p className="font-bold">إصدار فاتورة عميل</p>
-                        <p className="text-[10px] text-slate-400">فاتورة صادرة لعميل المحل</p>
+                        <p className="font-bold">{translate('إصدار فاتورة عميل')}</p>
+                        <p className="text-[10px] text-slate-400">{translate('فاتورة صادرة لعميل المحل')}</p>
                       </div>
                     </button>
 
@@ -287,8 +292,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                         <Store className="w-4 h-4" />
                       </div>
                       <div className="text-right min-w-0">
-                        <p className="font-bold">إضافة عميل أو متجر</p>
-                        <p className="text-[10px] text-slate-400">تسجيل بيانات جهة جديدة</p>
+                        <p className="font-bold">{translate('إضافة عميل أو متجر')}</p>
+                        <p className="text-[10px] text-slate-400">{translate('تسجيل بيانات جهة جديدة')}</p>
                       </div>
                     </button>
                   </div>
@@ -298,10 +303,20 @@ export const Navbar: React.FC<NavbarProps> = ({
 
             <button
               type="button"
+              onClick={onToggleLanguage}
+              className="h-10 px-2.5 sm:px-3 bg-slate-100/90 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-800 border border-slate-200/90 dark:border-slate-700/70 rounded-2xl text-xs font-bold text-slate-700 dark:text-slate-200 transition-all active:scale-95 cursor-pointer shrink-0"
+              aria-label={language === 'ar' ? 'Switch to English' : translate('التبديل إلى العربية')}
+              title={language === 'ar' ? 'Switch to English' : translate('التبديل إلى العربية')}
+            >
+              {language === 'ar' ? 'EN' : 'ع'}
+            </button>
+
+            <button
+              type="button"
               onClick={onToggleTheme}
               className="w-10 h-10 flex items-center justify-center text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white bg-slate-100/90 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-800 border border-slate-200/90 dark:border-slate-700/70 rounded-2xl transition-all active:scale-95 cursor-pointer shrink-0 shadow-2xs"
-              title={theme === 'dark' ? 'التبديل إلى الوضع النهاري' : 'التبديل إلى الوضع الليلي'}
-              aria-label={theme === 'dark' ? 'التبديل إلى الوضع النهاري' : 'التبديل إلى الوضع الليلي'}
+              title={translate(theme === 'dark' ? 'التبديل إلى الوضع النهاري' : 'التبديل إلى الوضع الليلي')}
+              aria-label={translate(theme === 'dark' ? 'التبديل إلى الوضع النهاري' : 'التبديل إلى الوضع الليلي')}
             >
               {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </button>
@@ -310,8 +325,8 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               onClick={onOpenNotifications}
               className="relative w-10 h-10 flex items-center justify-center text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white bg-slate-100/90 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-800 border border-slate-200/90 dark:border-slate-700/70 rounded-2xl transition-all active:scale-95 cursor-pointer shrink-0 shadow-2xs"
-              title="التنبيهات والإشعارات"
-              aria-label="التنبيهات"
+              title={translate('التنبيهات')}
+              aria-label={translate('التنبيهات')}
             >
               <Bell className="w-4 h-4" />
               {unreadAlertsCount > 0 && (
@@ -326,8 +341,8 @@ export const Navbar: React.FC<NavbarProps> = ({
               <button
                 onClick={() => setShowUserMenu(!showUserMenu)}
                 className="h-10 px-2 sm:px-2.5 bg-slate-100/90 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-800 rounded-2xl border border-slate-200/90 dark:border-slate-700/70 flex items-center gap-1.5 text-xs text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-all active:scale-95 cursor-pointer shrink-0 shadow-2xs"
-                title="الملف الشخصي والحساب"
-                aria-label="حساب المستخدم"
+                title={translate('الملف الشخصي والحساب')}
+                aria-label={translate('حساب المستخدم')}
               >
                 <div className="w-6 h-6 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold text-xs shrink-0">
                   {currentSession?.role === 'admin' ? (
@@ -337,7 +352,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   )}
                 </div>
                 <span className="hidden md:inline font-semibold">
-                  {currentSession?.name || 'المستخدم'}
+                  {currentSession?.name || translate('المستخدم')}
                 </span>
                 <ChevronDown className="w-3 h-3 text-slate-400 hidden sm:inline" />
               </button>
@@ -352,10 +367,12 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <div className="absolute left-0 mt-2 w-60 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl py-2 z-50 text-right animate-in fade-in slide-in-from-top-2">
                     <div className="px-4 py-2 border-b border-slate-100 dark:border-slate-800 text-xs">
                       <p className="font-bold text-slate-900 dark:text-white">
-                        {currentSession?.name || 'المستخدم'}
+                        {currentSession?.name || translate('المستخدم')}
                       </p>
                       <p className="text-[10px] text-slate-400">
-                        {currentSession?.role === 'admin' ? 'مدير النظام الكامل' : 'مستخدم المحل'}
+                        {currentSession?.role === 'admin'
+                          ? (language === 'ar' ? 'مدير النظام الكامل' : 'System administrator')
+                          : (language === 'ar' ? 'مستخدم المحل' : 'Shop user')}
                       </p>
                     </div>
 
@@ -368,7 +385,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                         className="w-full px-4 py-2 text-xs text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2 transition-colors cursor-pointer"
                       >
                         <Store className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                        <span>إدارة المحلات</span>
+                        <span>{language === 'ar' ? 'إدارة المحلات' : 'Manage shops'}</span>
                       </button>
                     )}
 
@@ -381,7 +398,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                         className="w-full px-4 py-2 text-xs text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2 transition-colors cursor-pointer"
                       >
                         <Database className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
-                        <span>إعدادات قاعدة البيانات</span>
+                        <span>{language === 'ar' ? 'إعدادات قاعدة البيانات' : 'Database settings'}</span>
                       </button>
                     )}
 
@@ -394,7 +411,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                         className="w-full px-4 py-2 text-xs text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 flex items-center gap-2 font-semibold transition-colors cursor-pointer"
                       >
                         <LogOut className="w-3.5 h-3.5" />
-                        <span>تسجيل الخروج</span>
+                        <span>{language === 'ar' ? 'تسجيل الخروج' : 'Sign out'}</span>
                       </button>
                     </div>
                   </div>
@@ -426,10 +443,10 @@ export const Navbar: React.FC<NavbarProps> = ({
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
               <div>
                 <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                  اختيار المحل أو الحساب النشط
+                  {translate('اختيار المحل أو الحساب النشط')}
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
-                  حدد المحل لعرض وعزل شيكاته وفواتيره
+                  {translate('حدد المحل لعرض وعزل شيكاته وفواتيره')}
                 </p>
               </div>
               <button
@@ -501,7 +518,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-500 text-white text-xs sm:text-sm font-bold rounded-2xl flex items-center justify-center gap-2 shadow-sm shadow-emerald-600/25 transition-all cursor-pointer"
                 >
                   <Store className="w-4 h-4" />
-                  <span>إدارة المحلات وتعديلها (Settings)</span>
+                  <span>{translate('إدارة المحلات وتعديلها (Settings)')}</span>
                 </button>
               </div>
             )}
@@ -530,10 +547,10 @@ export const Navbar: React.FC<NavbarProps> = ({
               <div>
                 <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
                   <Sparkles className="w-4 h-4 text-emerald-500" />
-                  <span>إضافة معاملة مالية جديدة</span>
+                  <span>{translate('إضافة معاملة مالية جديدة')}</span>
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
-                  اختر نوع العملية المالية للمحل: {displayShopName}
+                  {translate('اختر نوع العملية المالية للمحل:')} {displayShopName}
                 </p>
               </div>
               <button
@@ -557,8 +574,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <CreditCard className="w-6 h-6" />
                 </div>
                 <div className="min-w-0">
-                  <p className="font-bold text-slate-900 dark:text-white text-sm">تسجيل شيك جديد</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">شيك صادر للعميل أو المورد مع التنبيهات</p>
+                  <p className="font-bold text-slate-900 dark:text-white text-sm">{translate('تسجيل شيك جديد')}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">{translate('شيك صادر للعميل أو المورد مع التنبيهات')}</p>
                 </div>
               </button>
 
@@ -573,8 +590,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <Layers className="w-6 h-6" />
                 </div>
                 <div className="min-w-0">
-                  <p className="font-bold text-slate-900 dark:text-white text-sm">إصدار فاتورة عميل</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">فاتورة صادرة لعميل المحل مع تفاصيل الشيكات</p>
+                  <p className="font-bold text-slate-900 dark:text-white text-sm">{translate('إصدار فاتورة عميل')}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">{translate('فاتورة صادرة لعميل المحل مع تفاصيل الشيكات')}</p>
                 </div>
               </button>
 
@@ -589,8 +606,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <Store className="w-6 h-6" />
                 </div>
                 <div className="min-w-0">
-                  <p className="font-bold text-slate-900 dark:text-white text-sm">إضافة عميل أو متجر</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">تسجيل بيانات جهة جديدة أو هاتف للتواصل</p>
+                  <p className="font-bold text-slate-900 dark:text-white text-sm">{translate('إضافة عميل أو متجر')}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">{translate('تسجيل بيانات جهة جديدة أو هاتف للتواصل')}</p>
                 </div>
               </button>
             </div>
@@ -626,10 +643,12 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </div>
                 <div>
                   <p className="font-bold text-sm text-slate-900 dark:text-white">
-                    {currentSession?.name || 'المستخدم'}
+                    {currentSession?.name || translate('المستخدم')}
                   </p>
                   <p className="text-xs text-slate-400">
-                    {currentSession?.role === 'admin' ? 'مدير النظام الكامل' : 'مستخدم المحل'}
+                    {currentSession?.role === 'admin'
+                      ? (language === 'ar' ? 'مدير النظام الكامل' : 'System administrator')
+                      : (language === 'ar' ? 'مستخدم المحل' : 'Shop user')}
                   </p>
                 </div>
               </div>
@@ -656,8 +675,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                     <Store className="w-4 h-4" />
                   </div>
                   <div>
-                    <p className="font-bold text-slate-800 dark:text-slate-200">إدارة وتعديل المحلات</p>
-                    <p className="text-[10px] text-slate-400">إضافة محلات جديدة وتعيين حسابات الدخول</p>
+                    <p className="font-bold text-slate-800 dark:text-slate-200">{language === 'ar' ? 'إدارة وتعديل المحلات' : 'Manage shops'}</p>
+                    <p className="text-[10px] text-slate-400">{language === 'ar' ? 'إضافة محلات جديدة وتعيين حسابات الدخول' : 'Add shops and assign login accounts'}</p>
                   </div>
                 </button>
               )}
@@ -673,7 +692,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <div className="p-2 rounded-xl bg-rose-500/20 text-rose-600 dark:text-rose-400">
                   <LogOut className="w-4 h-4" />
                 </div>
-                <span>تسجيل الخروج من النظام</span>
+                <span>{language === 'ar' ? 'تسجيل الخروج من النظام' : 'Sign out'}</span>
               </button>
             </div>
           </div>

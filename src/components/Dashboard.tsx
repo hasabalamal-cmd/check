@@ -13,9 +13,10 @@ import {
   FileText,
 } from 'lucide-react';
 import { Customer, CheckItem, CustomerInvoice, ReceivedInvoice } from '../types';
-import { formatCurrency, formatArabicDate, CHECK_STATUS_CONFIG } from '../utils/checkCalculations';
+import { formatCurrency, formatLocalizedDate, CHECK_STATUS_CONFIG } from '../utils/checkCalculations';
 import { isReceiptReceived } from '../utils/receiptStatus';
 import { parseAmount } from '../utils/parseAmount';
+import { translate } from '../utils/i18n';
 
 interface DashboardProps {
   checks: CheckItem[];
@@ -89,13 +90,13 @@ export const Dashboard: React.FC<DashboardProps> = ({
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-semibold mb-2">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>لوحة التحكم المالية • {currentShopName}</span>
+              <span>{translate('لوحة التحكم المالية •')} {currentShopName}</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
               {currentShopName}
             </h1>
             <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-xl">
-              إدارة ومتابعة الشيكات القادمة والمستحقة، وتحصيل فواتير العملاء والفواتير المستلمة لـ {currentShopName}.
+              {translate('إدارة ومتابعة الشيكات القادمة والمستحقة، وتحصيل فواتير العملاء والفواتير المستلمة لـ')} {currentShopName}.
             </p>
           </div>
 
@@ -105,14 +106,14 @@ export const Dashboard: React.FC<DashboardProps> = ({
               className="px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 shadow-lg shadow-blue-600/30 transition-all active:scale-95 cursor-pointer"
             >
               <PlusCircle className="w-4 h-4" />
-              <span>تسجيل شيك جديد</span>
+              <span>{translate('تسجيل شيك جديد')}</span>
             </button>
             <button
               onClick={onIssueCustomerInvoice}
               className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 shadow-lg shadow-emerald-600/30 transition-all active:scale-95 cursor-pointer"
             >
               <PlusCircle className="w-4 h-4" />
-              <span>إصدار فاتورة عميل</span>
+              <span>{translate('إصدار فاتورة عميل')}</span>
             </button>
           </div>
         </div>
@@ -128,9 +129,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
       <div>
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <span>المؤشرات المالية الرئيسية</span>
+            <span>{translate('المؤشرات المالية الرئيسية')}</span>
             <span className="text-xs font-normal text-slate-500 dark:text-slate-400">
-              (تتحدث تلقائيًا مع أي تغيير في الحالات)
+              {translate('(تتحدث تلقائيًا مع أي تغيير في الحالات)')}
             </span>
           </h2>
         </div>
@@ -139,71 +140,71 @@ export const Dashboard: React.FC<DashboardProps> = ({
           {/* 1 & 2: الفواتير التي لم يتم استلام مستحقها */}
           <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-amber-500/30 shadow-sm hover:shadow-md hover:border-amber-500/50 transition-all relative overflow-hidden group">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-amber-700 dark:text-amber-400">الفواتير غير المستلمة</span>
+              <span className="text-xs font-semibold text-amber-700 dark:text-amber-400">{translate('الفواتير غير المستلمة')}</span>
               <div className="p-2 bg-amber-500/15 text-amber-600 dark:text-amber-400 rounded-xl">
                 <Clock className="w-5 h-5" />
               </div>
             </div>
             <div className="mt-3">
-              <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">لم يتم استلامها بعد</div>
+              <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">{translate('لم يتم استلامها بعد')}</div>
               <div className="text-2xl font-black text-amber-600 dark:text-amber-300 font-mono mt-1">
                 {formatCurrency(totalUnreceivedAmount)}
               </div>
             </div>
             <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
-              <span className="text-slate-500 dark:text-slate-400">عدد الفواتير غير المستلمة:</span>
+              <span className="text-slate-500 dark:text-slate-400">{translate('عدد الفواتير غير المستلمة:')}</span>
               <span className="font-bold text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-500/20 px-2 py-0.5 rounded-full font-mono">
-                {countUnreceivedInvoices} فواتير
+                {countUnreceivedInvoices} {translate('فواتير')}
               </span>
             </div>
             <div className="mt-1 text-[10px] text-slate-500 dark:text-slate-400">
-              الموردون: {unreceivedInvoices.length} • العملاء: {unreceivedCustomerInvoices.length}
+              {translate('الموردون:')} {unreceivedInvoices.length} • {translate('العملاء:')} {unreceivedCustomerInvoices.length}
             </div>
           </div>
 
           {/* 3 & 4: الفواتير التي تم استلام مستحقها */}
           <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-emerald-500/30 shadow-sm hover:shadow-md hover:border-emerald-500/50 transition-all relative overflow-hidden group">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-400">الفواتير المستلمة</span>
+              <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-400">{translate('الفواتير المستلمة')}</span>
               <div className="p-2 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 rounded-xl">
                 <CheckCircle2 className="w-5 h-5" />
               </div>
             </div>
             <div className="mt-3">
-              <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">تم استلامها</div>
+              <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">{translate('تم استلامها')}</div>
               <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400 font-mono mt-1">
                 {formatCurrency(totalReceivedAmount)}
               </div>
             </div>
             <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
-              <span className="text-slate-500 dark:text-slate-400">عدد الفواتير المستلمة:</span>
+              <span className="text-slate-500 dark:text-slate-400">{translate('عدد الفواتير المستلمة:')}</span>
               <span className="font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-500/20 px-2 py-0.5 rounded-full font-mono">
-                {countReceivedInvoices} فواتير
+                {countReceivedInvoices} {translate('فواتير')}
               </span>
             </div>
             <div className="mt-1 text-[10px] text-slate-500 dark:text-slate-400">
-              الموردون: {receivedInvoicesList.length} • العملاء: {receivedCustomerInvoices.length}
+              {translate('الموردون:')} {receivedInvoicesList.length} • {translate('العملاء:')} {receivedCustomerInvoices.length}
             </div>
           </div>
 
           {/* 5 & 6: إجمالي مبالغ الشيكات القادمة وعددها */}
           <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-blue-500/30 shadow-sm hover:shadow-md hover:border-blue-500/50 transition-all relative overflow-hidden group">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-blue-700 dark:text-blue-400">شيكات العملاء</span>
+              <span className="text-xs font-semibold text-blue-700 dark:text-blue-400">{translate('شيكات العملاء')}</span>
               <div className="p-2 bg-blue-500/15 text-blue-600 dark:text-blue-400 rounded-xl">
                 <CreditCard className="w-5 h-5" />
               </div>
             </div>
             <div className="mt-3">
-              <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">الشيكات القادمة</div>
+              <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">{translate('الشيكات القادمة')}</div>
               <div className="text-2xl font-black text-blue-600 dark:text-blue-400 font-mono mt-1">
                 {formatCurrency(totalUpcomingChecksAmount)}
               </div>
             </div>
             <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
-              <span className="text-slate-500 dark:text-slate-400">عدد الشيكات القادمة:</span>
+              <span className="text-slate-500 dark:text-slate-400">{translate('عدد الشيكات القادمة:')}</span>
               <span className="font-bold text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-500/20 px-2 py-0.5 rounded-full font-mono">
-                {countUpcomingChecks} شيكات
+                {countUpcomingChecks} {translate('شيكات')}
               </span>
             </div>
           </div>
@@ -211,25 +212,25 @@ export const Dashboard: React.FC<DashboardProps> = ({
           {/* 7 & 8: الشيكات المستحقة اليوم والمتأخرة */}
           <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-rose-500/30 shadow-sm hover:shadow-md hover:border-rose-500/50 transition-all relative overflow-hidden group">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-rose-700 dark:text-rose-400">شيكات بحاجة لإجراء</span>
+              <span className="text-xs font-semibold text-rose-700 dark:text-rose-400">{translate('شيكات بحاجة لإجراء')}</span>
               <div className="p-2 bg-rose-500/15 text-rose-600 dark:text-rose-400 rounded-xl">
                 <AlertCircle className="w-5 h-5" />
               </div>
             </div>
             <div className="mt-3 grid grid-cols-2 gap-2">
               <div className="p-2 bg-amber-50 dark:bg-amber-500/10 rounded-xl border border-amber-200 dark:border-amber-500/20">
-                <div className="text-[11px] text-amber-700 dark:text-amber-300 font-medium">مستحق اليوم</div>
+                <div className="text-[11px] text-amber-700 dark:text-amber-300 font-medium">{translate('مستحق اليوم')}</div>
                 <div className="text-base font-bold text-slate-900 dark:text-white font-mono mt-0.5">
-                  {countDueTodayChecks} شيك
+                  {translate(`${countDueTodayChecks} شيك`)}
                 </div>
                 <div className="text-[10px] text-slate-500 dark:text-slate-400 font-mono mt-0.5 truncate">
                   {formatCurrency(totalDueTodayAmount)}
                 </div>
               </div>
               <div className="p-2 bg-rose-50 dark:bg-rose-500/10 rounded-xl border border-rose-200 dark:border-rose-500/20">
-                <div className="text-[11px] text-rose-700 dark:text-rose-300 font-medium">متأخر</div>
+                <div className="text-[11px] text-rose-700 dark:text-rose-300 font-medium">{translate("متأخر")}</div>
                 <div className="text-base font-bold text-rose-600 dark:text-rose-300 font-mono mt-0.5">
-                  {countOverdueChecks} شيك
+                  {translate(`${countOverdueChecks} شيك`)}
                 </div>
                 <div className="text-[10px] text-slate-500 dark:text-slate-400 font-mono mt-0.5 truncate">
                   {formatCurrency(totalOverdueAmount)}
@@ -241,7 +242,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 onClick={() => onNavigateTab('checks')}
                 className="text-[11px] text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white inline-flex items-center gap-1 transition-colors cursor-pointer"
               >
-                <span>عرض قائمة الشيكات الكاملة</span>
+                <span>{translate("عرض قائمة الشيكات الكاملة")}</span>
                 <ArrowUpRight className="w-3 h-3" />
               </button>
             </div>
@@ -259,10 +260,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
               </div>
               <div>
                 <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                  يوجد {urgentChecks.length} شيك يتطلب انتباهك الفوري اليوم
+                  {translate('يوجد')} {translate(`${urgentChecks.length} شيك`)} {translate('يتطلب انتباهك الفوري اليوم')}
                 </h3>
                 <p className="text-xs text-slate-600 dark:text-slate-300 mt-0.5">
-                  شيكات مستحقة اليوم أو متأخرة عن تاريخ استحقاقها ولم يتم تسجيل صرفها بعد.
+                  {translate("                  {translate('شيكات مستحقة اليوم أو متأخرة عن تاريخ استحقاقها ولم يتم تسجيل صرفها بعد.')}")}
                 </p>
               </div>
             </div>
@@ -270,7 +271,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
               onClick={() => onNavigateTab('checks')}
               className="px-3.5 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl text-xs whitespace-nowrap shadow transition-all active:scale-95 cursor-pointer self-start sm:self-auto"
             >
-              متابعة الشيكات
+              {translate("متابعة الشيكات")}
             </button>
           </div>
 
@@ -289,17 +290,17 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     <span className="font-mono">{chk.checkNumber}</span>
                     <span>•</span>
                     <span className={chk.status === 'overdue' ? 'text-rose-600 dark:text-rose-400' : 'text-amber-600 dark:text-amber-400'}>
-                      {formatArabicDate(chk.dueDate)}
+                      {formatLocalizedDate(chk.dueDate)}
                     </span>
                   </div>
                 </div>
                 <button
                   onClick={() => onCashCheck(chk.id)}
                   className="px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-600/30 dark:hover:bg-emerald-600 text-emerald-700 dark:text-emerald-300 hover:text-emerald-900 dark:hover:text-white border border-emerald-300 dark:border-emerald-500/40 rounded-lg text-xs font-semibold flex items-center gap-1 transition-colors shrink-0 cursor-pointer"
-                  title="تم صرف الشيك"
+                  title={translate("تم صرف الشيك")}
                 >
                   <Check className="w-3.5 h-3.5" />
-                  <span>صرف</span>
+                  <span>{translate("صرف")}</span>
                 </button>
               </div>
             ))}
@@ -316,13 +317,13 @@ export const Dashboard: React.FC<DashboardProps> = ({
               <div className="p-2 bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-lg">
                 <CreditCard className="w-4 h-4" />
               </div>
-              <h3 className="font-bold text-slate-900 dark:text-white text-sm">أحدث شيكات العملاء</h3>
+              <h3 className="font-bold text-slate-900 dark:text-white text-sm">{translate("أحدث شيكات العملاء")}</h3>
             </div>
             <button
               onClick={() => onNavigateTab('checks')}
               className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium flex items-center gap-1 cursor-pointer"
             >
-              <span>عرض الكل</span>
+              <span>{translate("عرض الكل")}</span>
               <ArrowUpRight className="w-3.5 h-3.5" />
             </button>
           </div>
@@ -339,13 +340,13 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-bold text-slate-900 dark:text-white truncate">{chk.customerName}</span>
                       <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium border ${cfg.badgeBg}`}>
-                        {cfg.label}
+                        {translate(cfg.label)}
                       </span>
                     </div>
                     <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 text-[11px]">
                       <span className="font-mono">{chk.checkNumber}</span>
                       <span>•</span>
-                      <span>استحقاق: {formatArabicDate(chk.dueDate)}</span>
+                      <span>{translate('استحقاق:')} {formatLocalizedDate(chk.dueDate)}</span>
                     </div>
                   </div>
 
@@ -357,7 +358,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                       <button
                         onClick={() => onCashCheck(chk.id)}
                         className="p-1.5 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-500/30 rounded-lg transition-colors cursor-pointer"
-                        title="تأكيد الصرف"
+                        title={translate("تأكيد الصرف")}
                       >
                         <Check className="w-3.5 h-3.5" />
                       </button>
@@ -366,7 +367,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                       <button
                         onClick={() => onPreviewImage(chk.image!, `صورة شيك رقم ${chk.checkNumber}`)}
                         className="p-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg transition-colors cursor-pointer"
-                        title="معاينة الشيك"
+                        title={translate("معاينة الشيك")}
                       >
                         <Eye className="w-3.5 h-3.5" />
                       </button>
@@ -385,13 +386,13 @@ export const Dashboard: React.FC<DashboardProps> = ({
               <div className="p-2 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-lg">
                 <FileText className="w-4 h-4" />
               </div>
-              <h3 className="font-bold text-slate-900 dark:text-white text-sm">الفواتير المستلمة (تغيير فوري)</h3>
+              <h3 className="font-bold text-slate-900 dark:text-white text-sm">{translate("الفواتير المستلمة (تغيير فوري)")}</h3>
             </div>
             <button
               onClick={() => onNavigateTab('received_invoices')}
               className="text-xs text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 font-medium flex items-center gap-1 cursor-pointer"
             >
-              <span>عرض الكل</span>
+              <span>{translate("عرض الكل")}</span>
               <ArrowUpRight className="w-3.5 h-3.5" />
             </button>
           </div>
@@ -410,7 +411,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                       <span className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">({rinv.invoiceNumber})</span>
                     </div>
                     <div className="text-slate-500 dark:text-slate-400 text-[11px]">
-                      تاريخ: {formatArabicDate(rinv.invoiceDate)}
+                      {translate('تاريخ:')} {formatLocalizedDate(rinv.invoiceDate)}
                     </div>
                   </div>
 
@@ -427,17 +428,17 @@ export const Dashboard: React.FC<DashboardProps> = ({
                           ? 'bg-emerald-50 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-500/40 hover:bg-emerald-100'
                           : 'bg-amber-50 dark:bg-amber-500/20 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-500/40 hover:bg-amber-100'
                       }`}
-                      title="انقر لتغيير حالة الاستلام يدوياً"
+                      title={translate("انقر لتغيير حالة الاستلام يدوياً")}
                     >
                       {isReceived ? (
                         <>
                           <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                          <span className="hidden xs:inline">تم الاستلام</span>
+                          <span className="hidden xs:inline">{translate("تم الاستلام")}</span>
                         </>
                       ) : (
                         <>
                           <Clock className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
-                          <span className="hidden xs:inline">لم يتم الاستلام</span>
+                          <span className="hidden xs:inline">{translate("لم يتم الاستلام")}</span>
                         </>
                       )}
                     </button>

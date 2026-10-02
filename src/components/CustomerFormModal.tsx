@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { translate } from '../utils/i18n';
 import { X, Store, User, Phone, MapPin, FileText } from 'lucide-react';
 import { Customer } from '../types';
 
@@ -65,9 +66,9 @@ export const CustomerFormModal: React.FC<CustomerFormModalProps> = ({
             </div>
             <div>
               <h3 className="font-bold text-lg text-slate-900 dark:text-white">
-                {initialData ? 'تعديل بيانات المحل' : 'إضافة محل / عميل جديد'}
+                {translate(initialData ? 'تعديل بيانات المحل' : 'إضافة محل / عميل جديد')}
               </h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400">إدارة معلومات العملاء والمحلات التجارية</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">{translate("إدارة معلومات العملاء والمحلات التجارية")}</p>
             </div>
           </div>
           <button
@@ -83,7 +84,7 @@ export const CustomerFormModal: React.FC<CustomerFormModalProps> = ({
           {/* Store Name */}
           <div>
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-              اسم المحل <span className="text-rose-500">*</span>
+              {translate('اسم المحل')} <span className="text-rose-500">*</span>
             </label>
             <div className="relative">
               <Store className="w-4 h-4 text-slate-400 absolute right-3 top-3" />
@@ -92,7 +93,7 @@ export const CustomerFormModal: React.FC<CustomerFormModalProps> = ({
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="مثال: مؤسسة النور للتجارة"
+                placeholder={translate("مثال: مؤسسة النور للتجارة")}
                 className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl pr-10 pl-3 py-2.5 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-indigo-500 placeholder:text-slate-400 dark:placeholder:text-slate-500"
               />
             </div>
@@ -102,7 +103,7 @@ export const CustomerFormModal: React.FC<CustomerFormModalProps> = ({
             {/* Responsible Person */}
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                اسم المسؤول (اختياري)
+                {translate("اسم المسؤول (اختياري)")}
               </label>
               <div className="relative">
                 <User className="w-4 h-4 text-slate-400 absolute right-3 top-3" />
@@ -110,7 +111,7 @@ export const CustomerFormModal: React.FC<CustomerFormModalProps> = ({
                   type="text"
                   value={contactPerson}
                   onChange={(e) => setContactPerson(e.target.value)}
-                  placeholder="مثال: أحمد الدوسري"
+                  placeholder={translate("مثال: أحمد الدوسري")}
                   className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl pr-10 pl-3 py-2.5 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-indigo-500 placeholder:text-slate-400 dark:placeholder:text-slate-500"
                 />
               </div>
@@ -119,7 +120,7 @@ export const CustomerFormModal: React.FC<CustomerFormModalProps> = ({
             {/* Mobile Number */}
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                رقم الجوال (اختياري)
+                {translate("رقم الجوال (اختياري)")}
               </label>
               <div className="relative">
                 <Phone className="w-4 h-4 text-slate-400 absolute right-3 top-3" />
@@ -127,7 +128,7 @@ export const CustomerFormModal: React.FC<CustomerFormModalProps> = ({
                   type="tel"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  placeholder="مثال: 0551234567"
+                  placeholder={translate("مثال: 0551234567")}
                   className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl pr-10 pl-3 py-2.5 text-slate-900 dark:text-white text-sm font-mono focus:outline-none focus:border-indigo-500 placeholder:text-slate-400 dark:placeholder:text-slate-500"
                 />
               </div>
@@ -137,7 +138,7 @@ export const CustomerFormModal: React.FC<CustomerFormModalProps> = ({
           {/* Address */}
           <div>
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-              العنوان
+              {translate("العنوان")}
             </label>
             <div className="relative">
               <MapPin className="w-4 h-4 text-slate-400 absolute right-3 top-3" />
@@ -145,7 +146,7 @@ export const CustomerFormModal: React.FC<CustomerFormModalProps> = ({
                 type="text"
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
-                placeholder="المدينة، الحي، اسم الشارع أو رقم المعرض..."
+                placeholder={translate("المدينة، الحي، اسم الشارع أو رقم المعرض...")}
                 className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl pr-10 pl-3 py-2.5 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-indigo-500 placeholder:text-slate-400 dark:placeholder:text-slate-500"
               />
             </div>
@@ -154,7 +155,7 @@ export const CustomerFormModal: React.FC<CustomerFormModalProps> = ({
           {/* Notes */}
           <div>
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-              ملاحظات
+              {translate("ملاحظات")}
             </label>
             <div className="relative">
               <FileText className="w-4 h-4 text-slate-400 absolute right-3 top-3" />
@@ -162,7 +163,7 @@ export const CustomerFormModal: React.FC<CustomerFormModalProps> = ({
                 rows={3}
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                placeholder="شروط البيع، مواعيد التوريد، التسهيلات..."
+                placeholder={translate("شروط البيع، مواعيد التوريد، التسهيلات...")}
                 className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl pr-10 pl-3 py-2 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-indigo-500 placeholder:text-slate-400 dark:placeholder:text-slate-500"
               />
             </div>
@@ -175,13 +176,13 @@ export const CustomerFormModal: React.FC<CustomerFormModalProps> = ({
               onClick={onClose}
               className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-sm font-medium transition-colors cursor-pointer"
             >
-              إلغاء
+              {translate("إلغاء")}
             </button>
             <button
               type="submit"
               className="px-6 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold shadow-md shadow-indigo-500/20 transition-all cursor-pointer"
             >
-              {initialData ? 'حفظ التعديلات' : 'إضافة المحل'}
+              {translate(initialData ? 'حفظ التعديلات' : 'إضافة المحل')}
             </button>
           </div>
         </form>

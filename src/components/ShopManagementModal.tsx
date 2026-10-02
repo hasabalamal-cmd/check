@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { translate } from '../utils/i18n';
 import {
   X,
   Store,
@@ -58,15 +59,15 @@ export const ShopManagementModal: React.FC<ShopManagementModalProps> = ({
           <div className="w-14 h-14 rounded-2xl bg-rose-500/15 text-rose-500 mx-auto flex items-center justify-center">
             <Lock className="w-7 h-7" />
           </div>
-          <h3 className="text-xl font-bold text-slate-900 dark:text-white">صلاحية محظورة - للمدير فقط</h3>
+          <h3 className="text-xl font-bold text-slate-900 dark:text-white">{translate("صلاحية محظورة - للمدير فقط")}</h3>
           <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-            إدارة المحلات والحسابات متاحة حصرياً للمدير (Admin).
+            {translate("إدارة المحلات والحسابات متاحة حصرياً للمدير (Admin).")}
           </p>
           <button
             onClick={onClose}
             className="w-full py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-xl text-xs font-bold transition-colors cursor-pointer"
           >
-            إغلاق النافذة
+            {translate("إغلاق النافذة")}
           </button>
         </div>
       </div>
@@ -118,16 +119,16 @@ export const ShopManagementModal: React.FC<ShopManagementModalProps> = ({
 
     const cleanShopId = shopId.trim().toUpperCase();
     if (!cleanShopId) {
-      setError('يرجى إدخال معرف المحل (ShopID)');
+      setError(translate('يرجى إدخال معرف المحل (ShopID)'));
       return;
     }
 
     if (!shopName.trim()) {
-      setError('يرجى إدخال اسم المحل');
+      setError(translate('يرجى إدخال اسم المحل'));
       return;
     }
     if (isAdding && password.length < 10) {
-      setError('كلمة المرور مطلوبة ويجب ألا تقل عن 10 أحرف.');
+      setError(translate('كلمة المرور مطلوبة ويجب ألا تقل عن 10 أحرف.'));
       return;
     }
 
@@ -135,7 +136,7 @@ export const ShopManagementModal: React.FC<ShopManagementModalProps> = ({
     if (isAdding) {
       const exists = shops.some((s) => s.shopId.toUpperCase() === cleanShopId);
       if (exists) {
-        setError(`معرف المحل "${cleanShopId}" موجود مسبقاً، يرجى اختيار معرف فريد.`);
+        setError(translate('معرف المحل مستخدم مسبقاً، يرجى اختيار معرف فريد.'));
         return;
       }
     }
@@ -166,10 +167,10 @@ export const ShopManagementModal: React.FC<ShopManagementModalProps> = ({
       onShopsUpdated(updated);
       saveStoredShops(updated);
 
-      setSuccess(`تم حفظ المحل "${targetShop.shopName}" بنجاح!`);
+      setSuccess(translate('تم حفظ المحل بنجاح!'));
       cancelForm();
     } catch (err: any) {
-      setError(err.message || 'حدث خطأ أثناء حفظ المحل.');
+      setError(translate(err.message || 'حدث خطأ أثناء حفظ المحل.'));
     } finally {
       setIsLoading(false);
     }
@@ -184,17 +185,17 @@ export const ShopManagementModal: React.FC<ShopManagementModalProps> = ({
       onShopsUpdated(updated);
       saveStoredShops(updated);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'تعذر تحديث حالة المحل.');
+      setError(err instanceof Error ? translate(err.message) : translate('تعذر تحديث حالة المحل.'));
     }
   };
 
   const handleDelete = async (targetId: string) => {
     if (shops.length <= 1) {
-      alert('لا يمكن حذف المحل الأخير. يجب الإبقاء على محل واحد على الأقل.');
+      alert(translate('لا يمكن حذف المحل الأخير. يجب الإبقاء على محل واحد على الأقل.'));
       return;
     }
 
-    const conf = window.confirm(`سيتم تعطيل المحل "${targetId}" مع الإبقاء على بياناته. هل تريد المتابعة؟`);
+    const conf = window.confirm(`${translate('سيتم تعطيل المحل')} "${targetId}" ${translate('مع الإبقاء على بياناته. هل تريد المتابعة؟')}`);
     if (!conf) return;
     try {
       await deleteShopInGas(targetId);
@@ -202,7 +203,7 @@ export const ShopManagementModal: React.FC<ShopManagementModalProps> = ({
       onShopsUpdated(updated);
       saveStoredShops(updated);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'تعذر تعطيل المحل.');
+      setError(err instanceof Error ? translate(err.message) : translate('تعذر تعطيل المحل.'));
     }
   };
 
@@ -216,9 +217,9 @@ export const ShopManagementModal: React.FC<ShopManagementModalProps> = ({
               <Store className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-bold text-lg text-slate-900 dark:text-white">إدارة المحلات والحسابات (Multi-Tenant)</h3>
+              <h3 className="font-bold text-lg text-slate-900 dark:text-white">{translate("إدارة المحلات والحسابات (Multi-Tenant)")}</h3>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                إضافة محلات جديدة وتعديل بياناتها والتحكم بصلاحيات الدخول
+                {translate("إضافة محلات جديدة وتعديل بياناتها والتحكم بصلاحيات الدخول")}
               </p>
             </div>
           </div>
@@ -251,14 +252,16 @@ export const ShopManagementModal: React.FC<ShopManagementModalProps> = ({
             <form onSubmit={handleSave} className="mobile-entry-form bg-slate-50 dark:bg-slate-800/60 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-4">
               <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-3">
                 <h4 className="font-bold text-slate-900 dark:text-white text-sm">
-                  {isAdding ? 'إضافة محل جديد إلى النظام' : `تعديل بيانات المحل (${editingShop?.shopId})`}
+                  {isAdding
+                    ? translate('إضافة محل جديد إلى النظام')
+                    : `${translate('تعديل بيانات المحل')} (${editingShop?.shopId})`}
                 </h4>
                 <button
                   type="button"
                   onClick={cancelForm}
                   className="text-xs text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white cursor-pointer"
                 >
-                  إلغاء النموذج
+                  {translate("إلغاء النموذج")}
                 </button>
               </div>
 
@@ -273,10 +276,10 @@ export const ShopManagementModal: React.FC<ShopManagementModalProps> = ({
                     disabled={Boolean(editingShop)}
                     value={shopId}
                     onChange={(e) => setShopId(e.target.value.toUpperCase())}
-                    placeholder="مثال: BUNN أو ABC001"
+                    placeholder={translate("مثال: BUNN أو ABC001")}
                     className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-900 dark:text-white text-xs font-mono disabled:opacity-50 focus:outline-none focus:border-emerald-500"
                   />
-                  <span className="text-[10px] text-slate-500 dark:text-slate-400">حروف إنجليزية وأرقام فقط دون مسافات</span>
+                  <span className="text-[10px] text-slate-500 dark:text-slate-400">{translate("حروف إنجليزية وأرقام فقط دون مسافات")}</span>
                 </div>
 
                 <div>
@@ -288,7 +291,7 @@ export const ShopManagementModal: React.FC<ShopManagementModalProps> = ({
                     required
                     value={shopName}
                     onChange={(e) => setShopName(e.target.value)}
-                    placeholder="مثال: Bunn Cafe & Roastery"
+                    placeholder={translate("مثال: Bunn Cafe & Roastery")}
                     className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-900 dark:text-white text-xs focus:outline-none focus:border-emerald-500"
                   />
                 </div>
@@ -297,20 +300,20 @@ export const ShopManagementModal: React.FC<ShopManagementModalProps> = ({
               {isAdding && <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                    اسم المستخدم للدخول
+                    {translate("اسم المستخدم للدخول")}
                   </label>
                   <input
                     type="text"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
-                    placeholder="اسم المستخدم للدخول للمحل"
+                    placeholder={translate("اسم المستخدم للدخول للمحل")}
                     className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-900 dark:text-white text-xs focus:outline-none focus:border-emerald-500"
                   />
                 </div>
 
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                    كلمة المرور (10 أحرف على الأقل)
+                    {translate("كلمة المرور (10 أحرف على الأقل)")}
                   </label>
                   <input
                     type="password"
@@ -318,7 +321,7 @@ export const ShopManagementModal: React.FC<ShopManagementModalProps> = ({
                     minLength={isAdding ? 10 : undefined}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="أنشئ كلمة مرور قوية"
+                    placeholder={translate("أنشئ كلمة مرور قوية")}
                     className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-900 dark:text-white text-xs font-mono focus:outline-none focus:border-emerald-500"
                   />
                 </div>
@@ -328,20 +331,20 @@ export const ShopManagementModal: React.FC<ShopManagementModalProps> = ({
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                    اسم المسؤول
+                    {translate("اسم المسؤول")}
                   </label>
                   <input
                     type="text"
                     value={contactName}
                     onChange={(e) => setContactName(e.target.value)}
-                    placeholder="الشخص المسؤول"
+                    placeholder={translate("الشخص المسؤول")}
                     className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-900 dark:text-white text-xs focus:outline-none focus:border-emerald-500"
                   />
                 </div>
 
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                    رقم الجوال
+                    {translate("رقم الجوال")}
                   </label>
                   <input
                     type="text"
@@ -354,28 +357,28 @@ export const ShopManagementModal: React.FC<ShopManagementModalProps> = ({
 
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                    حالة المحل
+                    {translate("حالة المحل")}
                   </label>
                   <select
                     value={status}
                     onChange={(e) => setStatus(e.target.value as any)}
                     className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-900 dark:text-white text-xs focus:outline-none focus:border-emerald-500"
                   >
-                    <option value="active">مفعّل (Active)</option>
-                    <option value="inactive">معطّل (Inactive)</option>
+                    <option value="active">{translate("مفعّل (Active)")}</option>
+                    <option value="inactive">{translate("معطّل (Inactive)")}</option>
                   </select>
                 </div>
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                  ملاحظات إضافية
+                  {translate("ملاحظات إضافية")}
                 </label>
                 <input
                   type="text"
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  placeholder="أي ملاحظات أو تفاصيل الفرع..."
+                  placeholder={translate("أي ملاحظات أو تفاصيل الفرع...")}
                   className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-900 dark:text-white text-xs focus:outline-none focus:border-emerald-500"
                 />
               </div>
@@ -386,7 +389,7 @@ export const ShopManagementModal: React.FC<ShopManagementModalProps> = ({
                   onClick={cancelForm}
                   className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-medium cursor-pointer"
                 >
-                  إلغاء
+                  {translate("إلغاء")}
                 </button>
                 <button
                   type="submit"
@@ -400,7 +403,7 @@ export const ShopManagementModal: React.FC<ShopManagementModalProps> = ({
           ) : (
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                المحلات المسجلة في النظام ({shops.length})
+                {translate('المحلات المسجلة في النظام')} ({shops.length})
               </span>
               <button
                 type="button"
@@ -408,7 +411,7 @@ export const ShopManagementModal: React.FC<ShopManagementModalProps> = ({
                 className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-md shadow-emerald-600/20 transition-all cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
-                <span>إضافة محل جديد</span>
+                <span>{translate("إضافة محل جديد")}</span>
               </button>
             </div>
           )}
@@ -443,7 +446,7 @@ export const ShopManagementModal: React.FC<ShopManagementModalProps> = ({
                               : 'bg-rose-50 dark:bg-rose-500/20 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-500/30'
                           }`}
                         >
-                          {isActive ? 'مفعّل' : 'معطّل'}
+                          {translate(isActive ? 'مفعّل' : 'معطّل')}
                         </span>
                       </div>
                       <div className="flex flex-wrap items-center gap-3 mt-1 text-xs text-slate-500 dark:text-slate-400">
@@ -465,15 +468,15 @@ export const ShopManagementModal: React.FC<ShopManagementModalProps> = ({
                           ? 'bg-amber-50 hover:bg-amber-100 dark:bg-amber-500/10 dark:hover:bg-amber-500/20 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-500/30'
                           : 'bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:hover:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-500/30'
                       }`}
-                      title={isActive ? 'تعطيل المحل' : 'تفعيل المحل'}
+                      title={translate(isActive ? 'تعطيل المحل' : 'تفعيل المحل')}
                     >
-                      {isActive ? 'تعطيل' : 'تفعيل'}
+                      {translate(isActive ? 'تعطيل' : 'تفعيل')}
                     </button>
                     <button
                       type="button"
                       onClick={() => startEditShop(s)}
                       className="p-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-xl transition-colors text-xs cursor-pointer"
-                      title="تعديل المحل"
+                      title={translate("تعديل المحل")}
                     >
                       <Edit2 className="w-3.5 h-3.5" />
                     </button>
@@ -481,7 +484,7 @@ export const ShopManagementModal: React.FC<ShopManagementModalProps> = ({
                       type="button"
                       onClick={() => handleDelete(s.shopId)}
                       className="p-2 bg-slate-100 hover:bg-rose-100 dark:bg-slate-700 dark:hover:bg-rose-900/60 text-slate-600 hover:text-rose-600 dark:text-slate-300 dark:hover:text-rose-300 rounded-xl transition-colors text-xs cursor-pointer"
-                      title="حذف المحل"
+                      title={translate("حذف المحل")}
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>

@@ -9,6 +9,7 @@ import {
   Settings,
   X,
 } from 'lucide-react';
+import { getLanguage, translate } from '../utils/i18n';
 
 interface SidebarProps {
   activeTab: string;
@@ -37,16 +38,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
   currentShopName = 'Bunn',
   isAdmin = true,
 }) => {
+  const isArabic = getLanguage() === 'ar';
   const menuItems = [
     {
       id: 'dashboard',
-      label: 'لوحة التحكم',
+      label: translate('لوحة التحكم'),
       icon: LayoutDashboard,
       badge: null,
     },
     {
       id: 'checks',
-      label: 'الشيكات المستحقة',
+      label: translate('الشيكات المستحقة'),
       icon: CreditCard,
       badge: checksCount > 0 ? checksCount : null,
       badgeColor: dueTodayCount > 0
@@ -55,30 +57,30 @@ export const Sidebar: React.FC<SidebarProps> = ({
     },
     {
       id: 'received_invoices',
-      label: 'الفواتير',
+      label: translate('الفواتير'),
       icon: FileCheck,
-      badge: unreceivedCount > 0 ? `${unreceivedCount} معلقة` : null,
+      badge: unreceivedCount > 0 ? `${unreceivedCount} ${translate('معلقة')}` : null,
       badgeColor: unreceivedCount > 0
         ? 'bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-300'
         : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300',
     },
     {
       id: 'customer_invoices',
-      label: 'فواتير العملاء',
+      label: translate('فواتير العملاء'),
       icon: FileSpreadsheet,
       badge: null,
     },
     {
       id: 'customers',
-      label: 'العملاء والمحلات',
+      label: translate('العملاء والمحلات'),
       icon: Store,
       badge: null,
     },
     {
       id: 'automation',
-      label: 'التنبيهات والأتمتة',
+      label: translate('التنبيهات والأتمتة'),
       icon: Bot,
-      badge: 'آلي',
+      badge: translate('آلي'),
       badgeColor: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-400',
     },
   ];
@@ -103,7 +105,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* Sidebar Content (Desktop Sticky + Mobile Drawer) */}
       <aside
         className={`fixed lg:sticky top-0 lg:top-16 z-50 lg:z-10 h-screen lg:h-[calc(100vh-4rem)] w-72 lg:w-64 bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 p-4 flex flex-col justify-between shrink-0 transition-transform duration-300 ease-in-out shadow-2xl lg:shadow-none ${
-          isMobileOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'
+          isMobileOpen
+            ? 'translate-x-0'
+            : isArabic ? 'translate-x-full lg:translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}
       >
         <div className="space-y-3">
@@ -120,14 +124,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <button
               onClick={onCloseMobile}
               className="p-1.5 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white bg-slate-100 dark:bg-slate-800 rounded-lg cursor-pointer"
-              aria-label="إغلاق القائمة"
+              aria-label={translate('إغلاق القائمة')}
             >
               <X className="w-5 h-5" />
             </button>
           </div>
 
           <div className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider px-3">
-            الأقسام المالية
+            {translate('الأقسام المالية')}
           </div>
 
           <nav className="space-y-1">
@@ -171,11 +175,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
               className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-emerald-600/15 hover:bg-emerald-600/25 text-emerald-300 rounded-xl text-xs font-semibold border border-emerald-500/30 transition-colors cursor-pointer"
             >
               <Settings className="w-3.5 h-3.5" />
-              <span>الإعدادات وإدارة المحلات</span>
+              <span>{translate('الإعدادات وإدارة المحلات')}</span>
             </button>
           )}
           <div className="text-[10px] text-center text-slate-500 dark:text-slate-500">
-            {currentShopName} • نظام مالي متعدد المحلات
+            {currentShopName} • {translate('نظام مالي متعدد المحلات')}
           </div>
         </div>
       </aside>

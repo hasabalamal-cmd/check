@@ -1,4 +1,5 @@
 import { CheckItem, CheckStatus, AlertNotification } from '../types';
+import { getLanguage } from './i18n';
 
 /**
  * Returns formatted date string in YYYY-MM-DD
@@ -68,6 +69,22 @@ export const formatCurrency = (amount: number): string => {
 /**
  * Format date in Arabic friendly format (e.g. 15 أكتوبر 2026)
  */
+export const formatLocalizedDate = (dateStr: string): string => {
+  if (!dateStr) return '';
+  try {
+    const [y, m, d] = dateStr.split('-').map(Number);
+    const date = new Date(y, m - 1, d);
+    const locale = getLanguage() === 'ar' ? 'ar-SA' : 'en-US';
+    return new Intl.DateTimeFormat(locale, {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    }).format(date);
+  } catch {
+    return dateStr;
+  }
+};
+
 export const formatArabicDate = (dateStr: string): string => {
   if (!dateStr) return '';
   try {
@@ -303,4 +320,3 @@ export const sortAlertsByClosest = (alerts: AlertNotification[]): AlertNotificat
     return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
   });
 };
-

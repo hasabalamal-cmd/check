@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { translate } from '../utils/i18n';
 import {
   Lock,
   User as UserIcon,
@@ -10,15 +11,20 @@ import {
 } from 'lucide-react';
 import { UserSession } from '../types';
 import { login } from '../services/gasApi';
+import { type Language } from '../utils/i18n';
 
 interface LoginModalProps {
   isOpen: boolean;
   onLoginSuccess: (session: UserSession) => void;
+  language: Language;
+  onToggleLanguage: () => void;
 }
 
 export const LoginModal: React.FC<LoginModalProps> = ({
   isOpen,
   onLoginSuccess,
+  language,
+  onToggleLanguage,
 }) => {
   const hasLocalTestLogin = Boolean(
     import.meta.env.DEV &&
@@ -60,17 +66,25 @@ export const LoginModal: React.FC<LoginModalProps> = ({
         <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-blue-500/10 dark:bg-blue-500/20 rounded-full blur-3xl pointer-events-none" />
 
         {/* Brand Logo & Title */}
-        <div className="text-center space-y-2 mb-6">
+        <div className="relative text-center space-y-2 mb-6">
+          <button
+            type="button"
+            onClick={onToggleLanguage}
+            className="absolute top-0 right-0 h-9 px-3 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200"
+            aria-label={language === 'ar' ? 'Switch to English' : translate('التبديل إلى العربية')}
+          >
+            {language === 'ar' ? 'EN' : 'ع'}
+          </button>
           <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-emerald-600 via-teal-500 to-cyan-400 mx-auto flex items-center justify-center shadow-lg shadow-emerald-500/20 text-white font-black text-2xl font-mono">
             A
           </div>
-          <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-wide">تسجيل الدخول إلى AZAT</h2>
+          <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-wide">{translate("تسجيل الدخول إلى AZAT")}</h2>
           <p className="text-xs text-slate-500 dark:text-slate-400">
-            نظام إدارة الشيكات والفواتير للمحلات المتعددة
+            {translate("نظام إدارة الشيكات والفواتير للمحلات المتعددة")}
           </p>
           {hasLocalTestLogin && (
             <p className="text-xs text-emerald-700 dark:text-emerald-400">
-              حساب التجربة المحلي مفعّل على بيئة التطوير فقط ولا يتصل بقاعدة البيانات.
+              {translate("حساب التجربة المحلي مفعّل على بيئة التطوير فقط ولا يتصل بقاعدة البيانات.")}
             </p>
           )}
         </div>
@@ -86,7 +100,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-              اسم المستخدم أو معرف المحل
+              {translate("اسم المستخدم أو معرف المحل")}
             </label>
             <div className="relative">
               <UserIcon className="w-4 h-4 text-slate-400 absolute right-3.5 top-3.5" />
@@ -95,7 +109,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                 required
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="admin أو bunn أو abc أو xyz"
+                placeholder={translate("admin أو bunn أو abc أو xyz")}
                 className="w-full bg-slate-50 dark:bg-slate-800/90 border border-slate-300 dark:border-slate-700 rounded-xl pr-10 pl-3 py-2.5 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-emerald-500 placeholder:text-slate-400 dark:placeholder:text-slate-500 transition-colors"
                 autoFocus
               />
@@ -104,7 +118,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
 
           <div>
             <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-              كلمة المرور
+              {translate("كلمة المرور")}
             </label>
             <div className="relative">
               <Lock className="w-4 h-4 text-slate-400 absolute right-3.5 top-3.5" />
@@ -113,7 +127,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="كلمة المرور"
+                placeholder={translate("كلمة المرور")}
                 className="w-full bg-slate-50 dark:bg-slate-800/90 border border-slate-300 dark:border-slate-700 rounded-xl pr-10 pl-10 py-2.5 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-emerald-500 placeholder:text-slate-400 dark:placeholder:text-slate-500 transition-colors"
               />
               <button
@@ -132,7 +146,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
             className="w-full mt-2 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl text-sm font-bold shadow-md shadow-emerald-600/25 flex items-center justify-center gap-2 transition-all disabled:opacity-60 cursor-pointer"
           >
             <LogIn className="w-4 h-4" />
-            <span>{isLoading ? 'جاري تسجيل الدخول...' : 'تسجيل الدخول'}</span>
+            <span>{translate(isLoading ? 'جاري تسجيل الدخول...' : 'تسجيل الدخول')}</span>
           </button>
         </form>
 

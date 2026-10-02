@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { translate } from '../utils/i18n';
 import {
   X,
   Download,
@@ -130,7 +131,7 @@ export const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
                   type="button"
                   onClick={handleZoomIn}
                   className="p-1.5 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-slate-700/60 rounded-lg transition-colors cursor-pointer"
-                  title="تكبير"
+                  title={translate("تكبير")}
                 >
                   <ZoomIn className="w-4 h-4" />
                 </button>
@@ -138,7 +139,7 @@ export const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
                   type="button"
                   onClick={handleResetZoom}
                   className="px-2 py-1 text-xs font-mono text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white cursor-pointer"
-                  title="إعادة ضبط الحجم"
+                  title={translate("إعادة ضبط الحجم")}
                 >
                   {Math.round(zoom * 100)}%
                 </button>
@@ -146,7 +147,7 @@ export const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
                   type="button"
                   onClick={handleZoomOut}
                   className="p-1.5 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-slate-700/60 rounded-lg transition-colors cursor-pointer"
-                  title="تصغير"
+                  title={translate("تصغير")}
                 >
                   <ZoomOut className="w-4 h-4" />
                 </button>
@@ -159,10 +160,10 @@ export const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
               target="_blank"
               rel="noopener noreferrer"
               className="p-2 text-slate-700 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 rounded-xl transition-colors flex items-center gap-1.5 text-xs font-medium cursor-pointer"
-              title="فتح الملف في نافذة جديدة"
+              title={translate("فتح الملف في نافذة جديدة")}
             >
               <ExternalLink className="w-4 h-4" />
-              <span className="hidden md:inline">فتح الرابط</span>
+              <span className="hidden md:inline">{translate("فتح الرابط")}</span>
             </a>
 
             {/* Direct Download */}
@@ -172,17 +173,17 @@ export const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
               target={urlInfo.isGoogleDrive ? '_blank' : undefined}
               rel="noopener noreferrer"
               className="p-2 text-slate-700 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 rounded-xl transition-colors flex items-center gap-1.5 text-xs font-medium cursor-pointer"
-              title="تحميل الملف أو الصورة"
+              title={translate("تحميل الملف أو الصورة")}
             >
               <Download className="w-4 h-4" />
-              <span className="hidden md:inline">تحميل</span>
+              <span className="hidden md:inline">{translate("تحميل")}</span>
             </a>
 
             {/* Close Button */}
             <button
               onClick={onClose}
               className="p-2 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 rounded-xl transition-colors cursor-pointer"
-              title="إغلاق"
+              title={translate("إغلاق")}
             >
               <X className="w-5 h-5" />
             </button>
@@ -194,7 +195,7 @@ export const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
           {isLoading && !hasError && !urlInfo.isPdf && (
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/70 dark:bg-slate-950/60 backdrop-blur-xs z-10 space-y-2">
               <RefreshCw className="w-8 h-8 text-blue-500 dark:text-blue-400 animate-spin" />
-              <p className="text-xs text-slate-600 dark:text-slate-400 font-medium">جاري تحميل صورة المستند...</p>
+              <p className="text-xs text-slate-600 dark:text-slate-400 font-medium">{translate("جاري تحميل صورة المستند...")}</p>
             </div>
           )}
 
@@ -206,7 +207,7 @@ export const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
                 onClick={handlePrev}
                 disabled={currentIndex === 0}
                 className="absolute right-4 top-1/2 -translate-y-1/2 z-20 p-2.5 bg-white/90 hover:bg-white dark:bg-slate-800/80 dark:hover:bg-slate-700 text-slate-800 dark:text-white rounded-full shadow-lg border border-slate-200 dark:border-slate-700 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
-                title="الملف السابق"
+                title={translate("الملف السابق")}
               >
                 <ChevronRight className="w-6 h-6" />
               </button>
@@ -215,7 +216,7 @@ export const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
                 onClick={handleNext}
                 disabled={currentIndex === attachments.length - 1}
                 className="absolute left-4 top-1/2 -translate-y-1/2 z-20 p-2.5 bg-white/90 hover:bg-white dark:bg-slate-800/80 dark:hover:bg-slate-700 text-slate-800 dark:text-white rounded-full shadow-lg border border-slate-200 dark:border-slate-700 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
-                title="الملف التالي"
+                title={translate("الملف التالي")}
               >
                 <ChevronLeft className="w-6 h-6" />
               </button>
@@ -236,9 +237,9 @@ export const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
                 <AlertCircle className="w-6 h-6" />
               </div>
               <div className="space-y-1">
-                <h4 className="text-sm font-bold text-slate-900 dark:text-white">تعذر عرض المعاينة المباشرة</h4>
+                <h4 className="text-sm font-bold text-slate-900 dark:text-white">{translate("تعذر عرض المعاينة المباشرة")}</h4>
                 <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                  الملف محفوظ بنجاح في Google Drive، ويمكنك فتحه مباشرة في نافذة جديدة.
+                  {translate("الملف محفوظ بنجاح في Google Drive، ويمكنك فتحه مباشرة في نافذة جديدة.")}
                 </p>
               </div>
               <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
@@ -249,7 +250,7 @@ export const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
                   className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-sm shadow-blue-600/20"
                 >
                   <ExternalLink className="w-4 h-4" />
-                  <span>فتح في Google Drive</span>
+                  <span>{translate("فتح في Google Drive")}</span>
                 </a>
               </div>
             </div>

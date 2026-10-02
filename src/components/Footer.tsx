@@ -1,4 +1,5 @@
 import React from 'react';
+import { translate } from '../utils/i18n';
 import { ArrowUp } from 'lucide-react';
 
 interface FooterProps {
@@ -28,16 +29,16 @@ export const Footer: React.FC<FooterProps> = () => {
           <span className="text-slate-600">•</span>
           <span className="font-bold text-emerald-400 tracking-wider">AZAT</span>
           <span className="text-slate-600">•</span>
-          <span>جميع الحقوق محفوظة</span>
+          <span>{translate("جميع الحقوق محفوظة")}</span>
         </div>
 
         <button
           onClick={scrollToTop}
           className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 hover:border-slate-700 transition-all text-xs font-medium cursor-pointer shadow-2xs"
-          title="العودة لأعلى الصفحة"
+          title={translate("العودة لأعلى الصفحة")}
         >
           <ArrowUp className="w-3.5 h-3.5 text-emerald-400" />
-          <span>العودة لأعلى الصفحة</span>
+          <span>{translate("العودة لأعلى الصفحة")}</span>
         </button>
       </div>
     </footer>

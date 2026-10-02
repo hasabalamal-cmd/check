@@ -1,4 +1,5 @@
 import React from 'react';
+import { translate } from '../utils/i18n';
 import {
   X,
   Bell,
@@ -13,9 +14,10 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { AlertNotification } from '../types';
+import { getLanguage } from '../utils/i18n';
 import {
   formatCurrency,
-  formatArabicDate,
+  formatLocalizedDate,
   sortAlertsByClosest,
 } from '../utils/checkCalculations';
 
@@ -58,28 +60,28 @@ export const NotificationCenterModal: React.FC<NotificationCenterModalProps> = (
         return (
           <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 animate-pulse flex items-center gap-1">
             <Clock className="w-3 h-3 text-amber-400" />
-            <span>مستحق اليوم</span>
+            <span>{translate("مستحق اليوم")}</span>
           </span>
         );
       case 'overdue':
         return (
           <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40 flex items-center gap-1">
             <AlertCircle className="w-3 h-3 text-rose-400" />
-            <span>متأخر ({Math.abs(daysRemaining)} يوم)</span>
+            <span>{translate(`متأخر (${Math.abs(daysRemaining)} يوم)`)}</span>
           </span>
         );
       case '1_day':
         return (
           <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-orange-500/20 text-orange-300 border border-orange-500/40 flex items-center gap-1">
             <AlertTriangle className="w-3 h-3 text-orange-400" />
-            <span>غداً (متبقي يوم)</span>
+            <span>{translate("غداً (متبقي يوم)")}</span>
           </span>
         );
       case '3_days':
         return (
           <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-blue-500/20 text-blue-300 border border-blue-500/40 flex items-center gap-1">
             <Clock className="w-3 h-3 text-blue-400" />
-            <span>متبقي 3 أيام</span>
+            <span>{translate("متبقي 3 أيام")}</span>
           </span>
         );
       case '7_days':
@@ -87,7 +89,7 @@ export const NotificationCenterModal: React.FC<NotificationCenterModalProps> = (
         return (
           <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 flex items-center gap-1">
             <Clock className="w-3 h-3 text-cyan-400" />
-            <span>متبقي 7 أيام</span>
+            <span>{translate("متبقي 7 أيام")}</span>
           </span>
         );
     }
@@ -109,17 +111,17 @@ export const NotificationCenterModal: React.FC<NotificationCenterModalProps> = (
             </div>
             <div>
               <h3 className="font-bold text-lg text-white">
-                مركز التنبيهات والأتمتة الذكية
+                {translate("مركز التنبيهات والأتمتة الذكية")}
               </h3>
               <p className="text-xs text-slate-400">
-                متابعة آلية لمواعيد استحقاق الشيكات وإرسال الإشعارات
+                {translate("متابعة آلية لمواعيد استحقاق الشيكات وإرسال الإشعارات")}
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
             className="p-2 text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors cursor-pointer"
-            title="إغلاق"
+            title={translate("إغلاق")}
           >
             <X className="w-5 h-5" />
           </button>
@@ -133,7 +135,7 @@ export const NotificationCenterModal: React.FC<NotificationCenterModalProps> = (
               className="px-3.5 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-lg text-xs flex items-center gap-1.5 shadow-sm shadow-amber-500/20 transition-all active:scale-95 cursor-pointer"
             >
               <Play className="w-3.5 h-3.5 fill-current" />
-              <span>تشغيل فحص الشيكات الآن</span>
+              <span>{translate("تشغيل فحص الشيكات الآن")}</span>
             </button>
 
             {!hasBrowserPermission && (
@@ -142,7 +144,7 @@ export const NotificationCenterModal: React.FC<NotificationCenterModalProps> = (
                 className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 border border-slate-600 text-slate-200 rounded-lg text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
               >
                 <Send className="w-3.5 h-3.5 text-blue-400" />
-                <span>تفعيل إشعارات المتصفح</span>
+                <span>{translate("تفعيل إشعارات المتصفح")}</span>
               </button>
             )}
           </div>
@@ -152,10 +154,10 @@ export const NotificationCenterModal: React.FC<NotificationCenterModalProps> = (
               <button
                 onClick={onMarkAllAsRead}
                 className="text-xs text-slate-400 hover:text-white flex items-center gap-1 transition-colors px-2 py-1 rounded hover:bg-slate-800 cursor-pointer"
-                title="تحديد كل الإشعارات كمقروءة"
+                title={translate("تحديد كل الإشعارات كمقروءة")}
               >
                 <Check className="w-3.5 h-3.5 text-emerald-400" />
-                <span>تحديد الكل كمقروء</span>
+                <span>{translate("تحديد الكل كمقروء")}</span>
               </button>
             )}
 
@@ -163,10 +165,10 @@ export const NotificationCenterModal: React.FC<NotificationCenterModalProps> = (
               <button
                 onClick={onClearAllNotifications}
                 className="text-xs text-rose-400 hover:text-rose-300 flex items-center gap-1 transition-colors px-2 py-1 rounded hover:bg-rose-950/40 cursor-pointer"
-                title="حذف جميع التنبيهات من القائمة"
+                title={translate("حذف جميع التنبيهات من القائمة")}
               >
                 <Trash2 className="w-3.5 h-3.5" />
-                <span>مسح الكل</span>
+                <span>{translate("مسح الكل")}</span>
               </button>
             )}
           </div>
@@ -176,7 +178,7 @@ export const NotificationCenterModal: React.FC<NotificationCenterModalProps> = (
         <div className="mx-6 mt-4 p-3 bg-slate-800/40 rounded-xl border border-slate-700/50 text-[11px] text-slate-300 flex items-center justify-between">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span className="font-semibold text-slate-200">نظام الفحص اليومي النشط (الأقرب استحقاقاً أولاً):</span>
+            <span className="font-semibold text-slate-200">{translate("نظام الفحص اليومي النشط (الأقرب استحقاقاً أولاً):")}</span>
             <span className="text-slate-400">
               يوم الاستحقاق • قبل يوم • قبل 3 أيام • قبل 7 أيام
             </span>
@@ -189,10 +191,10 @@ export const NotificationCenterModal: React.FC<NotificationCenterModalProps> = (
             <div className="text-center py-12 text-slate-500 space-y-2">
               <CheckCircle2 className="w-12 h-12 mx-auto text-emerald-500/50" />
               <p className="text-sm font-medium text-slate-300">
-                لا توجد تنبيهات جديدة حاليًا
+                {translate("لا توجد تنبيهات جديدة حاليًا")}
               </p>
               <p className="text-xs text-slate-500">
-                جميع الشيكات إما تم صرفها أو مواعيد استحقاقها بعيدة عن فترات التنبيه.
+                {translate("جميع الشيكات إما تم صرفها أو مواعيد استحقاقها بعيدة عن فترات التنبيه.")}
               </p>
             </div>
           ) : (
@@ -209,7 +211,7 @@ export const NotificationCenterModal: React.FC<NotificationCenterModalProps> = (
                   <div className="flex items-center gap-2 flex-wrap">
                     {getAlertBadge(alert.type, alert.daysRemaining)}
                     <span className="text-xs text-slate-400 font-mono">
-                      {new Date(alert.timestamp).toLocaleTimeString('ar-SA', {
+                      {new Date(alert.timestamp).toLocaleTimeString(getLanguage() === 'ar' ? 'ar-SA' : 'en-US', {
                         hour: '2-digit',
                         minute: '2-digit',
                       })}
@@ -222,7 +224,7 @@ export const NotificationCenterModal: React.FC<NotificationCenterModalProps> = (
                         onClick={() => onMarkAsRead(alert.id)}
                         className="text-[11px] text-slate-400 hover:text-white px-1.5 py-0.5 rounded hover:bg-slate-700/60 transition-colors cursor-pointer"
                       >
-                        تحديد كمقروء
+                        {translate("تحديد كمقروء")}
                       </button>
                     )}
 
@@ -230,7 +232,7 @@ export const NotificationCenterModal: React.FC<NotificationCenterModalProps> = (
                     <button
                       onClick={() => onDeleteNotification(alert.id)}
                       className="p-1 text-slate-400 hover:text-rose-400 hover:bg-rose-950/50 rounded-md transition-colors cursor-pointer"
-                      title="حذف هذا التنبيه من القائمة"
+                      title={translate("حذف هذا التنبيه من القائمة")}
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -240,37 +242,37 @@ export const NotificationCenterModal: React.FC<NotificationCenterModalProps> = (
                 {/* Preformatted Message box matching user exact requirement */}
                 <div className="p-3 bg-slate-950/60 rounded-lg border border-slate-800/80 font-sans text-xs space-y-1 text-slate-200 shadow-xs">
                   <div className="font-bold text-amber-400 flex items-center justify-between">
-                    <span>تنبيه شيك {alert.daysRemaining <= 0 ? 'مستحق' : 'قادم'}</span>
+                    <span>{translate('تنبيه شيك')} {translate(alert.daysRemaining <= 0 ? 'مستحق' : 'قادم')}</span>
                   </div>
                   <div>
-                    <span className="text-slate-400">المحل: </span>
+                    <span className="text-slate-400">{translate("المحل:")} </span>
                     <span className="font-semibold text-white">{alert.storeName}</span>
                   </div>
                   <div>
-                    <span className="text-slate-400">المبلغ: </span>
+                    <span className="text-slate-400">{translate("المبلغ:")} </span>
                     <span className="font-bold text-emerald-400 font-mono">
                       {formatCurrency(alert.amount)}
                     </span>
                   </div>
                   <div>
-                    <span className="text-slate-400">تاريخ الاستحقاق: </span>
+                    <span className="text-slate-400">{translate("تاريخ الاستحقاق:")} </span>
                     <span className="text-slate-200 font-medium">
-                      {formatArabicDate(alert.dueDate)}
+                      {formatLocalizedDate(alert.dueDate)}
                     </span>
                   </div>
                   <div className="font-bold text-amber-300 pt-1">
                     {alert.daysRemaining > 0
-                      ? `متبقي ${alert.daysRemaining} أيام`
+                      ? translate(`متبقي ${alert.daysRemaining} أيام`)
                       : alert.daysRemaining === 0
-                      ? 'يوم الاستحقاق هو اليوم!'
-                      : `متأخر منذ ${Math.abs(alert.daysRemaining)} يوم`}
+                      ? translate('يوم الاستحقاق هو اليوم!')
+                      : translate(`متأخر منذ ${Math.abs(alert.daysRemaining)} يوم`)}
                   </div>
                 </div>
 
                 {/* Action button */}
                 <div className="mt-3 flex items-center justify-between gap-2">
                   <span className="text-[11px] text-slate-400">
-                    {alert.daysRemaining <= 0 ? 'شيك عاجل' : `متبقي ${alert.daysRemaining} أيام`}
+                    {alert.daysRemaining <= 0 ? translate('شيك عاجل') : translate(`متبقي ${alert.daysRemaining} أيام`)}
                   </span>
                   <div className="flex items-center gap-2">
                     <button
@@ -281,7 +283,7 @@ export const NotificationCenterModal: React.FC<NotificationCenterModalProps> = (
                       className="px-3 py-1.5 bg-emerald-600/30 hover:bg-emerald-600 border border-emerald-500/40 text-emerald-300 hover:text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
                     >
                       <CheckCircle2 className="w-3.5 h-3.5" />
-                      <span>تم صرف الشيك الآن</span>
+                      <span>{translate("تم صرف الشيك الآن")}</span>
                     </button>
                   </div>
                 </div>

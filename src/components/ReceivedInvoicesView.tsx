@@ -13,9 +13,10 @@ import {
   ArrowUpDown,
 } from 'lucide-react';
 import { CustomerInvoice, ReceivedInvoice } from '../types';
-import { formatCurrency, formatArabicDate } from '../utils/checkCalculations';
+import { formatCurrency, formatLocalizedDate } from '../utils/checkCalculations';
 import { isReceiptReceived } from '../utils/receiptStatus';
 import { parseAmount } from '../utils/parseAmount';
+import { translate } from '../utils/i18n';
 
 interface ReceivedInvoicesViewProps {
   invoices: ReceivedInvoice[];
@@ -92,10 +93,10 @@ export const ReceivedInvoicesView: React.FC<ReceivedInvoicesViewProps> = ({
             </div>
             <div>
               <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
-                الفواتير
+                {translate('الفواتير')}
               </h1>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                عرض ومتابعة فواتير الموردين والعملاء وحالات الاستلام
+                {translate('عرض ومتابعة فواتير الموردين والعملاء وحالات الاستلام')}
               </p>
             </div>
           </div>
@@ -106,7 +107,7 @@ export const ReceivedInvoicesView: React.FC<ReceivedInvoicesViewProps> = ({
           className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 shadow-sm shadow-emerald-600/30 transition-all active:scale-95 self-start sm:self-auto cursor-pointer"
         >
           <Plus className="w-4 h-4" />
-          <span>إصدار فاتورة عميل</span>
+          <span>{translate('إصدار فاتورة عميل')}</span>
         </button>
       </div>
 
@@ -115,12 +116,12 @@ export const ReceivedInvoicesView: React.FC<ReceivedInvoicesViewProps> = ({
         {/* Unreceived summary */}
         <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-amber-500/30 shadow-xs flex items-center justify-between">
           <div>
-            <div className="text-xs text-amber-700 dark:text-amber-400 font-medium">إجمالي الفواتير غير المستلمة</div>
+            <div className="text-xs text-amber-700 dark:text-amber-400 font-medium">{translate('إجمالي الفواتير غير المستلمة')}</div>
             <div className="text-xl sm:text-2xl font-black text-amber-600 dark:text-amber-300 font-mono mt-1">
               {formatCurrency(totalUnreceivedAmount)}
             </div>
             <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-              {unreceivedInvoices.length} فاتورة غير مستلمة
+              {unreceivedInvoices.length} {translate('فاتورة غير مستلمة')}
             </div>
           </div>
           <div className="p-3 bg-amber-500/15 text-amber-600 dark:text-amber-400 rounded-xl">
@@ -131,12 +132,12 @@ export const ReceivedInvoicesView: React.FC<ReceivedInvoicesViewProps> = ({
         {/* Received summary */}
         <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-emerald-500/30 shadow-xs flex items-center justify-between">
           <div>
-            <div className="text-xs text-emerald-700 dark:text-emerald-400 font-medium">إجمالي الفواتير المستلمة</div>
+            <div className="text-xs text-emerald-700 dark:text-emerald-400 font-medium">{translate('إجمالي الفواتير المستلمة')}</div>
             <div className="text-xl sm:text-2xl font-black text-emerald-600 dark:text-emerald-400 font-mono mt-1">
               {formatCurrency(totalReceivedAmount)}
             </div>
             <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-              {receivedInvoices.length} فاتورة مستلمة
+              {receivedInvoices.length} {translate('فاتورة مستلمة')}
             </div>
           </div>
           <div className="p-3 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 rounded-xl">
@@ -147,12 +148,12 @@ export const ReceivedInvoicesView: React.FC<ReceivedInvoicesViewProps> = ({
         {/* Total sum */}
         <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs flex items-center justify-between">
           <div>
-            <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">إجمالي قيمة جميع الفواتير</div>
+            <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">{translate('إجمالي قيمة جميع الفواتير')}</div>
             <div className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white font-mono mt-1">
               {formatCurrency(totalAllAmount)}
             </div>
             <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-              إجمالي {allInvoices.length} فاتورة
+              {translate('إجمالي الفواتير')}: {allInvoices.length}
             </div>
           </div>
           <div className="p-3 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl">
@@ -171,7 +172,7 @@ export const ReceivedInvoicesView: React.FC<ReceivedInvoicesViewProps> = ({
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="ابحث برقم الفاتورة، اسم الجهة..."
+              placeholder={translate('ابحث برقم الفاتورة، اسم الجهة...')}
               className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl pr-9 pl-3 py-2 text-slate-900 dark:text-white text-xs sm:text-sm focus:outline-none focus:border-emerald-500 placeholder:text-slate-400"
             />
           </div>
@@ -183,9 +184,9 @@ export const ReceivedInvoicesView: React.FC<ReceivedInvoicesViewProps> = ({
               onChange={(e) => setReceiptFilter(e.target.value as any)}
               className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-900 dark:text-white text-xs sm:text-sm focus:outline-none focus:border-emerald-500"
             >
-              <option value="all">كل حالات الاستلام ({allInvoices.length})</option>
-              <option value="not_received">لم يتم الاستلام ({unreceivedInvoices.length})</option>
-              <option value="received">تم الاستلام ({receivedInvoices.length})</option>
+              <option value="all">{translate('كل حالات الاستلام')} ({allInvoices.length})</option>
+              <option value="not_received">{translate('لم يتم الاستلام')} ({unreceivedInvoices.length})</option>
+              <option value="received">{translate('تم الاستلام')} ({receivedInvoices.length})</option>
             </select>
           </div>
 
@@ -196,14 +197,14 @@ export const ReceivedInvoicesView: React.FC<ReceivedInvoicesViewProps> = ({
               onChange={(e) => setSortBy(e.target.value as any)}
               className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-900 dark:text-white text-xs sm:text-sm focus:outline-none focus:border-emerald-500"
             >
-              <option value="date">ترتيب حسب التاريخ</option>
-              <option value="amount">ترتيب حسب المبلغ</option>
-              <option value="source">ترتيب حسب اسم الجهة</option>
+              <option value="date">{translate('ترتيب حسب التاريخ')}</option>
+              <option value="amount">{translate('ترتيب حسب المبلغ')}</option>
+              <option value="source">{translate('ترتيب حسب اسم الجهة')}</option>
             </select>
             <button
               onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
               className="p-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-600 dark:text-slate-300 transition-colors cursor-pointer"
-              title="تبديل اتجاه الترتيب"
+              title={translate('تبديل اتجاه الترتيب')}
             >
               <ArrowUpDown className="w-4 h-4" />
             </button>
@@ -221,7 +222,7 @@ export const ReceivedInvoicesView: React.FC<ReceivedInvoicesViewProps> = ({
                   : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300'
               }`}
             >
-              الكل ({allInvoices.length})
+              {translate('الكل')} ({allInvoices.length})
             </button>
             <button
               onClick={() => setReceiptFilter('not_received')}
@@ -231,7 +232,7 @@ export const ReceivedInvoicesView: React.FC<ReceivedInvoicesViewProps> = ({
                   : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300'
               }`}
             >
-              لم يتم الاستلام ({unreceivedInvoices.length})
+              {translate('لم يتم الاستلام')} ({unreceivedInvoices.length})
             </button>
             <button
               onClick={() => setReceiptFilter('received')}
@@ -241,12 +242,12 @@ export const ReceivedInvoicesView: React.FC<ReceivedInvoicesViewProps> = ({
                   : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300'
               }`}
             >
-              تم الاستلام ({receivedInvoices.length})
+              {translate('تم الاستلام')} ({receivedInvoices.length})
             </button>
           </div>
 
           <div className="text-slate-500 dark:text-slate-400 text-xs">
-            النتائج والإجماليات تشمل فواتير الموردين والعملاء.
+            {translate('النتائج والإجماليات تشمل فواتير الموردين والعملاء.')}
           </div>
         </div>
       </div>
@@ -255,13 +256,13 @@ export const ReceivedInvoicesView: React.FC<ReceivedInvoicesViewProps> = ({
       {filteredInvoices.length === 0 ? (
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-12 text-center space-y-3">
           <FileCheck className="w-12 h-12 mx-auto text-slate-400" />
-          <h3 className="text-base font-bold text-slate-900 dark:text-white">لا توجد فواتير مطابقة</h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400">جرّب تعديل معايير البحث أو إصدار فاتورة عميل جديدة.</p>
+          <h3 className="text-base font-bold text-slate-900 dark:text-white">{translate('لا توجد فواتير مطابقة')}</h3>
+          <p className="text-xs text-slate-500 dark:text-slate-400">{translate('جرّب تعديل معايير البحث أو إصدار فاتورة عميل جديدة.')}</p>
           <button
             onClick={onIssueCustomerInvoice}
             className="px-4 py-2 bg-emerald-600 text-white rounded-xl text-xs font-semibold shadow-sm cursor-pointer"
           >
-            إصدار فاتورة عميل
+            {translate('إصدار فاتورة عميل')}
           </button>
         </div>
       ) : (
@@ -294,17 +295,17 @@ export const ReceivedInvoicesView: React.FC<ReceivedInvoicesViewProps> = ({
                           ? 'bg-emerald-50 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-500/40 hover:bg-emerald-100'
                           : 'bg-amber-50 dark:bg-amber-500/20 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-500/40 hover:bg-amber-100'
                       }`}
-                      title="انقر لتغيير حالة الاستلام يدوياً"
+                      title={translate("انقر لتغيير حالة الاستلام يدوياً")}
                     >
                       {isReceived ? (
                         <>
                           <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                          <span>تم الاستلام</span>
+                          <span>{translate("تم الاستلام")}</span>
                         </>
                       ) : (
                         <>
                           <Clock className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
-                          <span>لم يتم الاستلام</span>
+                          <span>{translate("لم يتم الاستلام")}</span>
                         </>
                       )}
                     </button>
@@ -314,7 +315,7 @@ export const ReceivedInvoicesView: React.FC<ReceivedInvoicesViewProps> = ({
                   <div className="space-y-1">
                     <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 text-xs">
                       <Building2 className="w-3.5 h-3.5" />
-                      <span>{kind === 'customer' ? 'العميل:' : 'الجهة الموردة:'}</span>
+                      <span>{translate(kind === 'customer' ? 'العميل:' : 'الجهة الموردة:')}</span>
                     </div>
                     <h3 className="font-bold text-slate-900 dark:text-white text-base truncate" title={sourceName}>
                       {sourceName}
@@ -324,7 +325,7 @@ export const ReceivedInvoicesView: React.FC<ReceivedInvoicesViewProps> = ({
                         ? 'bg-teal-50 text-teal-700 dark:bg-teal-500/15 dark:text-teal-300'
                         : 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300'
                     }`}>
-                      {kind === 'customer' ? 'فاتورة عميل' : 'فاتورة مورد'}
+                      {translate(kind === 'customer' ? 'فاتورة عميل' : 'فاتورة مورد')}
                     </span>
                     <div className="text-2xl font-black text-slate-900 dark:text-white font-mono mt-1">
                       {formatCurrency(parseAmount(inv.amount))}
@@ -336,10 +337,10 @@ export const ReceivedInvoicesView: React.FC<ReceivedInvoicesViewProps> = ({
                     <div className="flex items-center justify-between">
                       <span className="text-slate-500 dark:text-slate-400 flex items-center gap-1">
                         <Calendar className="w-3.5 h-3.5" />
-                        <span>تاريخ الفاتورة:</span>
+                        <span>{translate('تاريخ الفاتورة:')}</span>
                       </span>
                       <span className="font-semibold text-slate-800 dark:text-slate-200">
-                        {formatArabicDate(inv.invoiceDate)}
+                        {formatLocalizedDate(inv.invoiceDate)}
                       </span>
                     </div>
 
@@ -358,23 +359,23 @@ export const ReceivedInvoicesView: React.FC<ReceivedInvoicesViewProps> = ({
                       <button
                         onClick={() => onPreviewImage(inv.image!, `فاتورة ${inv.invoiceNumber}`)}
                         className="p-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-xl transition-colors text-xs flex items-center gap-1 cursor-pointer"
-                        title="معاينة الفاتورة أو المستند"
+                        title={translate('معاينة الفاتورة أو المستند')}
                       >
                         <Eye className="w-3.5 h-3.5" />
-                        <span>معاينة</span>
+                        <span>{translate('معاينة')}</span>
                       </button>
                     )}
                     <button
                       onClick={() => onEditInvoice(inv, invoiceKind)}
                       className="p-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-xl transition-colors text-xs cursor-pointer"
-                      title="تعديل الفاتورة"
+                      title={translate('تعديل الفاتورة')}
                     >
                       <Edit2 className="w-3.5 h-3.5" />
                     </button>
                     <button
                       onClick={() => onDeleteInvoice(inv.id, invoiceKind)}
                       className="p-2 bg-slate-100 hover:bg-rose-100 dark:bg-slate-700 dark:hover:bg-rose-900/60 text-slate-600 hover:text-rose-600 dark:text-slate-300 dark:hover:text-rose-300 rounded-xl transition-colors text-xs cursor-pointer"
-                      title="حذف الفاتورة"
+                      title={translate('حذف الفاتورة')}
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -385,7 +386,7 @@ export const ReceivedInvoicesView: React.FC<ReceivedInvoicesViewProps> = ({
                     onClick={() => onToggleReceiptStatus(inv.id, invoiceKind)}
                     className="text-xs text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white underline font-medium cursor-pointer"
                   >
-                    تغيير إلى {isReceived ? 'لم يتم الاستلام' : 'تم الاستلام'}
+                    {translate('تغيير إلى')} {translate(isReceived ? 'لم يتم الاستلام' : 'تم الاستلام')}
                   </button>
                 </div>
               </div>
