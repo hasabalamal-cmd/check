@@ -17,6 +17,7 @@ import {
   sortAlertsByClosest,
 } from './utils/checkCalculations';
 import { isReceiptReceived } from './utils/receiptStatus';
+import { getLocalTestData, localTestShop } from './services/localTestData';
 import {
   getCurrentSession,
   getStoredShops,
@@ -74,7 +75,9 @@ export default function App() {
   ));
 
   // Multi-Tenant Session & Shops State
-  const [shops, setShops] = useState<Shop[]>(() => getAvailableShops(getStoredShops()));
+  const [shops, setShops] = useState<Shop[]>(() => (
+    getCurrentSession()?.localTestOnly ? [localTestShop] : getAvailableShops(getStoredShops())
+  ));
   const [currentSession, setSession] = useState<UserSession | null>(() => getCurrentSession());
   const [currentShopId, setCurrentShopIdState] = useState<string>(() => getActiveShopId());
 
@@ -172,6 +175,17 @@ export default function App() {
     setCustomerInvoices([]);
     setReceivedInvoices([]);
     setNotifications([]);
+
+    if (session.localTestOnly) {
+      const testData = getLocalTestData();
+      setShops([localTestShop]);
+      setCustomers(testData.customers);
+      setChecks(testData.checks);
+      setCustomerInvoices(testData.invoices);
+      setReceivedInvoices(testData.receivedInvoices);
+      setNotifications([]);
+      return;
+    }
 
     if (isGasConfigured()) {
       setIsLoadingGas(true);
@@ -678,6 +692,34 @@ export default function App() {
     }
   };
 
+  const handleToggleCustomerReceiptStatus = async (id: string) => {
+    const invoice = customerInvoices.find((item) => item.id === id);
+    if (!invoice) return;
+
+    const nextIsReceived = !isReceiptReceived(invoice.receiptStatus);
+    const targetInvoice: CustomerInvoice = {
+      ...invoice,
+      receiptStatus: nextIsReceived ? 'مستلم' : 'مستحق',
+      receiptDate: nextIsReceived ? getTodayString() : '',
+    };
+    const updated = customerInvoices.map((item) => item.id === id ? targetInvoice : item);
+
+    if (nextIsReceived) {
+      confetti({ particleCount: 60, spread: 60, origin: { y: 0.6 } });
+    }
+
+    setCustomerInvoices(updated);
+    saveCustomerInvoices(updated, currentShopId);
+
+    if (isGasConfigured()) {
+      try {
+        await updateInvoiceInGas(targetInvoice);
+      } catch (err) {
+        console.warn('Error updating customer invoice status in GAS:', err);
+      }
+    }
+  };
+
   // ==================== Notifications Handlers ====================
   const handleMarkAllAsRead = () => {
     const updated = notifications.map((n) => ({ ...n, isRead: true }));
@@ -721,15 +763,17 @@ export default function App() {
   // Login Success Handler
   const handleLoginSuccess = (session: UserSession) => {
     setSession(session);
+    if (session.localTestOnly) setShops([localTestShop]);
     setCurrentShopIdState(session.currentShopId);
     setActiveShopId(session.currentShopId);
   };
 
   // Badge calculations
   const unreadAlertsCount = notifications.filter((n) => !n.isRead).length;
-  const unreceivedInvoicesCount = receivedInvoices.filter(
-    (invoice) => !isReceiptReceived(invoice.receiptStatus)
-  ).length;
+  const unreceivedInvoicesCount = [
+    ...receivedInvoices,
+    ...customerInvoices,
+  ].filter((invoice) => !isReceiptReceived(invoice.receiptStatus)).length;
   const dueTodayChecksCount = checks.filter(
     (c) => c.status === 'due_today' || c.status === 'مستحق اليوم'
   ).length;
@@ -762,10 +806,6 @@ export default function App() {
         onOpenAddCheck={() => {
           setCheckToEdit(null);
           setIsCheckModalOpen(true);
-        }}
-        onOpenAddReceivedInvoice={() => {
-          setReceivedInvoiceToEdit(null);
-          setIsReceivedInvoiceModalOpen(true);
         }}
         onOpenAddCustomerInvoice={() => {
           setCustomerInvoiceToEdit(null);
@@ -828,9 +868,9 @@ export default function App() {
                 setCheckToEdit(null);
                 setIsCheckModalOpen(true);
               }}
-              onOpenReceivedInvoiceModal={() => {
-                setReceivedInvoiceToEdit(null);
-                setIsReceivedInvoiceModalOpen(true);
+              onIssueCustomerInvoice={() => {
+                setCustomerInvoiceToEdit(null);
+                setIsCustomerInvoiceModalOpen(true);
               }}
               onNavigateTab={(tab) => setActiveTab(tab)}
               onPreviewImage={(url, title) => setPreviewImage({ url, title })}
@@ -860,16 +900,36 @@ export default function App() {
           {activeTab === 'received_invoices' && (
             <ReceivedInvoicesView
               invoices={receivedInvoices}
-              onAddInvoice={() => {
-                setReceivedInvoiceToEdit(null);
-                setIsReceivedInvoiceModalOpen(true);
+              customerInvoices={customerInvoices}
+              onIssueCustomerInvoice={() => {
+                setCustomerInvoiceToEdit(null);
+                setIsCustomerInvoiceModalOpen(true);
               }}
-              onEditInvoice={(inv) => {
-                setReceivedInvoiceToEdit(inv);
-                setIsReceivedInvoiceModalOpen(true);
+              onEditInvoice={(inv, kind) => {
+                if (kind === 'customer') {
+                  if (!('customerId' in inv)) return;
+                  setCustomerInvoiceToEdit(inv);
+                  setIsCustomerInvoiceModalOpen(true);
+                } else {
+                  if (!('sourceName' in inv)) return;
+                  setReceivedInvoiceToEdit(inv);
+                  setIsReceivedInvoiceModalOpen(true);
+                }
               }}
-              onDeleteInvoice={handleDeleteReceivedInvoice}
-              onToggleReceiptStatus={handleToggleReceiptStatus}
+              onDeleteInvoice={(id, kind) => {
+                if (kind === 'customer') {
+                  handleDeleteCustomerInvoice(id);
+                } else {
+                  handleDeleteReceivedInvoice(id);
+                }
+              }}
+              onToggleReceiptStatus={(id, kind) => {
+                if (kind === 'customer') {
+                  handleToggleCustomerReceiptStatus(id);
+                } else {
+                  handleToggleReceiptStatus(id);
+                }
+              }}
               onPreviewImage={(url, title) => setPreviewImage({ url, title })}
             />
           )}

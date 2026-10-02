@@ -4,7 +4,6 @@ import {
   Plus,
   ChevronDown,
   CreditCard,
-  FileCheck,
   Store,
   Layers,
   Database,
@@ -31,7 +30,6 @@ interface NavbarProps {
   onOpenNotifications: () => void;
   onOpenGoogleSheets: () => void;
   onOpenAddCheck: () => void;
-  onOpenAddReceivedInvoice: () => void;
   onOpenAddCustomerInvoice: () => void;
   onOpenAddCustomer: () => void;
   activeTab: string;
@@ -56,7 +54,6 @@ export const Navbar: React.FC<NavbarProps> = ({
   unreadAlertsCount,
   onOpenNotifications,
   onOpenAddCheck,
-  onOpenAddReceivedInvoice,
   onOpenAddCustomerInvoice,
   onOpenAddCustomer,
   isGasConnected,
@@ -276,22 +273,6 @@ export const Navbar: React.FC<NavbarProps> = ({
                       <div className="text-right min-w-0">
                         <p className="font-bold">إصدار فاتورة عميل</p>
                         <p className="text-[10px] text-slate-400">فاتورة صادرة لعميل المحل</p>
-                      </div>
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        setShowAddMenu(false);
-                        onOpenAddReceivedInvoice();
-                      }}
-                      className="w-full px-4 py-2.5 text-xs text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white flex items-center gap-3 transition-colors cursor-pointer"
-                    >
-                      <div className="p-2 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-xl shrink-0">
-                        <FileCheck className="w-4 h-4" />
-                      </div>
-                      <div className="text-right min-w-0">
-                        <p className="font-bold">تسجيل فاتورة مستلمة</p>
-                        <p className="text-[10px] text-slate-400">فواتير التوريدات والمصروفات</p>
                       </div>
                     </button>
 
@@ -594,22 +575,6 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <div className="min-w-0">
                   <p className="font-bold text-slate-900 dark:text-white text-sm">إصدار فاتورة عميل</p>
                   <p className="text-xs text-slate-500 dark:text-slate-400">فاتورة صادرة لعميل المحل مع تفاصيل الشيكات</p>
-                </div>
-              </button>
-
-              <button
-                onClick={() => {
-                  setShowAddMenu(false);
-                  onOpenAddReceivedInvoice();
-                }}
-                className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/80 hover:bg-emerald-50 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700/80 flex items-center gap-3.5 transition-all cursor-pointer text-right group active:scale-98"
-              >
-                <div className="w-11 h-11 rounded-2xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                  <FileCheck className="w-6 h-6" />
-                </div>
-                <div className="min-w-0">
-                  <p className="font-bold text-slate-900 dark:text-white text-sm">تسجيل فاتورة مستلمة</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">فواتير التوريدات وتتبع حالة الاستلام</p>
                 </div>
               </button>
 

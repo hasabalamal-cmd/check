@@ -7,6 +7,7 @@
 import { Customer, CheckItem, CustomerInvoice, ReceivedInvoice, AppSettings, Shop, UserSession } from '../types';
 import { getActiveShopId, getCurrentSession, saveStoredShops, setCurrentSession } from './auth';
 import { parseAttachments } from '../utils/imageUrl';
+import { parseAmount } from '../utils/parseAmount';
 
 const GAS_API_URL_KEY = 'sanad_gas_api_url';
 
@@ -27,6 +28,7 @@ export const setGasApiUrl = (url: string) => {
 };
 
 export const isGasConfigured = (): boolean => {
+  if (getCurrentSession()?.localTestOnly) return false;
   const url = getGasApiUrl();
   return Boolean(url && url.startsWith('http'));
 };
@@ -54,11 +56,15 @@ const assertGasResponse = async (response: Response) => {
 };
 
 async function callGasPost<T = any>(action: string, payload: Record<string, any> = {}): Promise<T> {
+  const session = getCurrentSession();
+  if (session?.localTestOnly) {
+    throw new Error('جلسة التجربة المحلية لا يمكنها الاتصال بقاعدة البيانات.');
+  }
+
   const url = getGasApiUrl();
   if (!url) {
     throw new Error('لم يتم تحديد رابط Google Apps Script Web App بعد.');
   }
-  const session = getCurrentSession();
   if (!session) throw new Error('يلزم تسجيل الدخول قبل تنفيذ هذا الطلب.');
   const currentShopId = payload.ShopID || payload.shopId || getActiveShopId();
 
@@ -87,6 +93,34 @@ export const login = async (
   username: string,
   password: string
 ): Promise<{ success: boolean; session?: UserSession; error?: string }> => {
+  const testUsername = import.meta.env.VITE_LOCAL_TEST_USERNAME;
+  const testPassword = import.meta.env.VITE_LOCAL_TEST_PASSWORD;
+  if (
+    import.meta.env.DEV &&
+    testUsername &&
+    testPassword &&
+    username === testUsername &&
+    password === testPassword
+  ) {
+    const now = Date.now();
+    const session: UserSession = {
+      sessionId: crypto.randomUUID(),
+      userId: 'local-test-user',
+      username: testUsername,
+      name: 'مستخدم تجريبي',
+      shopName: 'متجر تجريبي محلي',
+      role: 'shop_user',
+      allowedShopIds: ['LOCALTEST'],
+      currentShopId: 'LOCALTEST',
+      createdAt: new Date(now).toISOString(),
+      expiresAt: new Date(now + 6 * 60 * 60 * 1000).toISOString(),
+      token: crypto.randomUUID(),
+      localTestOnly: true,
+    };
+    setCurrentSession(session);
+    return { success: true, session };
+  }
+
   const url = getGasApiUrl();
   if (!url) return { success: false, error: 'لم يتم إعداد رابط Google Apps Script Web App.' };
   try {
@@ -121,7 +155,7 @@ export const logout = () => {
   const session = getCurrentSession();
   setCurrentSession(null);
 
-  if (session && getGasApiUrl()) {
+  if (session && !session.localTestOnly && getGasApiUrl()) {
     void fetch(getGasApiUrl(), {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -311,7 +345,7 @@ export const fetchAllDataFromGas = async (shopId: string = getActiveShopId()): P
       shopId: rec.ShopID || rec.shopId || shopId,
       invoiceNumber: rec.InvoiceNumber || rec.invoiceNumber || '',
       sourceName: rec.EntityName || rec.sourceName || '',
-      amount: Number(rec.Amount || rec.amount) || 0,
+      amount: parseAmount(rec.Amount ?? rec.amount),
       invoiceDate: rec.InvoiceDate || rec.invoiceDate || '',
       receiptStatus: rec.ReceiptStatus || rec.receiptStatus || 'لم يتم الاستلام',
       receiptDate: rec.ReceiptDate || rec.receiptDate || '',

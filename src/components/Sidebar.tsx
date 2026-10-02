@@ -55,7 +55,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     },
     {
       id: 'received_invoices',
-      label: 'الفواتير المستلمة',
+      label: 'الفواتير',
       icon: FileCheck,
       badge: unreceivedCount > 0 ? `${unreceivedCount} معلقة` : null,
       badgeColor: unreceivedCount > 0

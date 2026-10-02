@@ -15,6 +15,7 @@ import {
 import { Customer, CheckItem, CustomerInvoice, ReceivedInvoice } from '../types';
 import { formatCurrency, formatArabicDate, CHECK_STATUS_CONFIG } from '../utils/checkCalculations';
 import { isReceiptReceived } from '../utils/receiptStatus';
+import { parseAmount } from '../utils/parseAmount';
 
 interface DashboardProps {
   checks: CheckItem[];
@@ -24,7 +25,7 @@ interface DashboardProps {
   onToggleReceiptStatus: (id: string) => void;
   onCashCheck: (id: string) => void;
   onOpenCheckModal: () => void;
-  onOpenReceivedInvoiceModal: () => void;
+  onIssueCustomerInvoice: () => void;
   onNavigateTab: (tab: string) => void;
   onPreviewImage: (url: string, title: string) => void;
   currentShopName?: string;
@@ -33,23 +34,28 @@ interface DashboardProps {
 export const Dashboard: React.FC<DashboardProps> = ({
   checks,
   receivedInvoices,
+  customerInvoices,
   onToggleReceiptStatus,
   onCashCheck,
   onOpenCheckModal,
-  onOpenReceivedInvoiceModal,
+  onIssueCustomerInvoice,
   onNavigateTab,
   onPreviewImage,
   currentShopName = 'Bunn',
 }) => {
   // 1. Unreceived Invoices Stats (لم يتم استلام مستحقها)
   const unreceivedInvoices = receivedInvoices.filter((inv) => !isReceiptReceived(inv.receiptStatus));
-  const totalUnreceivedAmount = unreceivedInvoices.reduce((sum, inv) => sum + Number(inv.amount || 0), 0);
-  const countUnreceivedInvoices = unreceivedInvoices.length;
+  const unreceivedCustomerInvoices = customerInvoices.filter((inv) => !isReceiptReceived(inv.receiptStatus));
+  const totalUnreceivedAmount = [...unreceivedInvoices, ...unreceivedCustomerInvoices]
+    .reduce((sum, inv) => sum + parseAmount(inv.amount), 0);
+  const countUnreceivedInvoices = unreceivedInvoices.length + unreceivedCustomerInvoices.length;
 
   // 2. Received Invoices Stats (الفواتير المستلمة)
   const receivedInvoicesList = receivedInvoices.filter((inv) => isReceiptReceived(inv.receiptStatus));
-  const totalReceivedAmount = receivedInvoicesList.reduce((sum, inv) => sum + Number(inv.amount || 0), 0);
-  const countReceivedInvoices = receivedInvoicesList.length;
+  const receivedCustomerInvoices = customerInvoices.filter((inv) => isReceiptReceived(inv.receiptStatus));
+  const totalReceivedAmount = [...receivedInvoicesList, ...receivedCustomerInvoices]
+    .reduce((sum, inv) => sum + parseAmount(inv.amount), 0);
+  const countReceivedInvoices = receivedInvoicesList.length + receivedCustomerInvoices.length;
 
   // 3. Upcoming Checks (الشيكات القادمة)
   const upcomingChecks = checks.filter(
@@ -102,11 +108,11 @@ export const Dashboard: React.FC<DashboardProps> = ({
               <span>تسجيل شيك جديد</span>
             </button>
             <button
-              onClick={onOpenReceivedInvoiceModal}
+              onClick={onIssueCustomerInvoice}
               className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 shadow-lg shadow-emerald-600/30 transition-all active:scale-95 cursor-pointer"
             >
               <PlusCircle className="w-4 h-4" />
-              <span>تسجيل فاتورة مستلمة</span>
+              <span>إصدار فاتورة عميل</span>
             </button>
           </div>
         </div>
@@ -150,6 +156,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 {countUnreceivedInvoices} فواتير
               </span>
             </div>
+            <div className="mt-1 text-[10px] text-slate-500 dark:text-slate-400">
+              الموردون: {unreceivedInvoices.length} • العملاء: {unreceivedCustomerInvoices.length}
+            </div>
           </div>
 
           {/* 3 & 4: الفواتير التي تم استلام مستحقها */}
@@ -171,6 +180,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
               <span className="font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-500/20 px-2 py-0.5 rounded-full font-mono">
                 {countReceivedInvoices} فواتير
               </span>
+            </div>
+            <div className="mt-1 text-[10px] text-slate-500 dark:text-slate-400">
+              الموردون: {receivedInvoicesList.length} • العملاء: {receivedCustomerInvoices.length}
             </div>
           </div>
 
@@ -404,7 +416,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
                   <div className="flex items-center gap-2 sm:gap-3 shrink-0">
                     <span className="font-mono font-bold text-slate-900 dark:text-white text-xs sm:text-sm">
-                      {formatCurrency(rinv.amount)}
+                      {formatCurrency(parseAmount(rinv.amount))}
                     </span>
 
                     {/* Manual Status Toggle Button */}

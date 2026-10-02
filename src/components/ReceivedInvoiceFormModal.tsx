@@ -109,7 +109,7 @@ export const ReceivedInvoiceFormModal: React.FC<ReceivedInvoiceFormModalProps> =
             </div>
             <div>
               <h3 className="font-bold text-lg text-slate-900 dark:text-white">
-                {initialData ? 'تعديل الفاتورة المستلمة' : 'تسجيل فاتورة مستلمة جديدة'}
+                {initialData ? 'تعديل الفاتورة المستلمة' : 'إضافة فاتورة مورد'}
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400">
                 المحل الحالي: <span className="text-emerald-600 dark:text-emerald-400 font-semibold">{currentShopName || getActiveShopId()}</span>

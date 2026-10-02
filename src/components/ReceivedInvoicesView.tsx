@@ -12,22 +12,25 @@ import {
   Edit2,
   ArrowUpDown,
 } from 'lucide-react';
-import { ReceivedInvoice } from '../types';
+import { CustomerInvoice, ReceivedInvoice } from '../types';
 import { formatCurrency, formatArabicDate } from '../utils/checkCalculations';
 import { isReceiptReceived } from '../utils/receiptStatus';
+import { parseAmount } from '../utils/parseAmount';
 
 interface ReceivedInvoicesViewProps {
   invoices: ReceivedInvoice[];
-  onAddInvoice: () => void;
-  onEditInvoice: (invoice: ReceivedInvoice) => void;
-  onDeleteInvoice: (id: string) => void;
-  onToggleReceiptStatus: (id: string) => void;
+  customerInvoices: CustomerInvoice[];
+  onIssueCustomerInvoice: () => void;
+  onEditInvoice: (invoice: ReceivedInvoice | CustomerInvoice, kind: 'supplier' | 'customer') => void;
+  onDeleteInvoice: (id: string, kind: 'supplier' | 'customer') => void;
+  onToggleReceiptStatus: (id: string, kind: 'supplier' | 'customer') => void;
   onPreviewImage: (url: string, title: string) => void;
 }
 
 export const ReceivedInvoicesView: React.FC<ReceivedInvoicesViewProps> = ({
   invoices,
-  onAddInvoice,
+  customerInvoices,
+  onIssueCustomerInvoice,
   onEditInvoice,
   onDeleteInvoice,
   onToggleReceiptStatus,
@@ -38,48 +41,45 @@ export const ReceivedInvoicesView: React.FC<ReceivedInvoicesViewProps> = ({
   const [sortBy, setSortBy] = useState<'date' | 'amount' | 'source'>('date');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
-  // Filter calculations
-  const filteredInvoices = invoices
-    .filter((inv) => {
-      // 1. Search filter
+  const allInvoices = [
+    ...invoices.map((invoice) => ({ kind: 'supplier' as const, invoice, sourceName: invoice.sourceName })),
+    ...customerInvoices.map((invoice) => ({
+      kind: 'customer' as const,
+      invoice,
+      sourceName: invoice.customerName || invoice.customerId,
+    })),
+  ];
+  const unreceivedInvoices = allInvoices.filter(({ invoice }) => !isReceiptReceived(invoice.receiptStatus));
+  const receivedInvoices = allInvoices.filter(({ invoice }) => isReceiptReceived(invoice.receiptStatus));
+  const totalUnreceivedAmount = unreceivedInvoices.reduce((sum, entry) => sum + parseAmount(entry.invoice.amount), 0);
+  const totalReceivedAmount = receivedInvoices.reduce((sum, entry) => sum + parseAmount(entry.invoice.amount), 0);
+  const totalAllAmount = allInvoices.reduce((sum, entry) => sum + parseAmount(entry.invoice.amount), 0);
+
+  const filteredInvoices = allInvoices
+    .filter(({ invoice, sourceName }) => {
       const term = searchTerm.trim().toLowerCase();
       const matchSearch =
         !term ||
-        inv.invoiceNumber.toLowerCase().includes(term) ||
-        inv.sourceName.toLowerCase().includes(term) ||
-        (inv.notes && inv.notes.toLowerCase().includes(term));
-
-      // 2. Receipt status filter (strict manual check)
-      const isReceived = isReceiptReceived(inv.receiptStatus);
+        invoice.invoiceNumber.toLowerCase().includes(term) ||
+        sourceName.toLowerCase().includes(term) ||
+        (invoice.notes && invoice.notes.toLowerCase().includes(term));
+      const isReceived = isReceiptReceived(invoice.receiptStatus);
       const matchReceipt =
-        receiptFilter === 'all'
-          ? true
-          : receiptFilter === 'received'
-          ? isReceived
-          : !isReceived;
-
+        receiptFilter === 'all' ||
+        (receiptFilter === 'received' ? isReceived : !isReceived);
       return matchSearch && matchReceipt;
     })
     .sort((a, b) => {
       let comparison = 0;
       if (sortBy === 'date') {
-        comparison = new Date(a.invoiceDate).getTime() - new Date(b.invoiceDate).getTime();
+        comparison = new Date(a.invoice.invoiceDate).getTime() - new Date(b.invoice.invoiceDate).getTime();
       } else if (sortBy === 'amount') {
-        comparison = a.amount - b.amount;
-      } else if (sortBy === 'source') {
+        comparison = parseAmount(a.invoice.amount) - parseAmount(b.invoice.amount);
+      } else {
         comparison = a.sourceName.localeCompare(b.sourceName, 'ar');
       }
       return sortOrder === 'asc' ? comparison : -comparison;
     });
-
-  // KPI calculations
-  const unreceivedInvoices = invoices.filter((invoice) => !isReceiptReceived(invoice.receiptStatus));
-  const totalUnreceivedAmount = unreceivedInvoices.reduce((sum, invoice) => sum + Number(invoice.amount || 0), 0);
-
-  const receivedInvoices = invoices.filter((invoice) => isReceiptReceived(invoice.receiptStatus));
-  const totalReceivedAmount = receivedInvoices.reduce((sum, invoice) => sum + Number(invoice.amount || 0), 0);
-
-  const totalAllAmount = invoices.reduce((sum, invoice) => sum + Number(invoice.amount || 0), 0);
 
   return (
     <div className="space-y-6">
@@ -92,21 +92,21 @@ export const ReceivedInvoicesView: React.FC<ReceivedInvoicesViewProps> = ({
             </div>
             <div>
               <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
-                الفواتير المستلمة
+                الفواتير
               </h1>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                متابعة الفواتير المستلمة من الشركات والجهات الموردة وحالات الاستلام
+                عرض ومتابعة فواتير الموردين والعملاء وحالات الاستلام
               </p>
             </div>
           </div>
         </div>
 
         <button
-          onClick={onAddInvoice}
+          onClick={onIssueCustomerInvoice}
           className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 shadow-sm shadow-emerald-600/30 transition-all active:scale-95 self-start sm:self-auto cursor-pointer"
         >
           <Plus className="w-4 h-4" />
-          <span>تسجيل فاتورة مستلمة</span>
+          <span>إصدار فاتورة عميل</span>
         </button>
       </div>
 
@@ -152,7 +152,7 @@ export const ReceivedInvoicesView: React.FC<ReceivedInvoicesViewProps> = ({
               {formatCurrency(totalAllAmount)}
             </div>
             <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-              إجمالي {invoices.length} فاتورة
+              إجمالي {allInvoices.length} فاتورة
             </div>
           </div>
           <div className="p-3 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl">
@@ -183,7 +183,7 @@ export const ReceivedInvoicesView: React.FC<ReceivedInvoicesViewProps> = ({
               onChange={(e) => setReceiptFilter(e.target.value as any)}
               className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-900 dark:text-white text-xs sm:text-sm focus:outline-none focus:border-emerald-500"
             >
-              <option value="all">كل حالات الاستلام ({invoices.length})</option>
+              <option value="all">كل حالات الاستلام ({allInvoices.length})</option>
               <option value="not_received">لم يتم الاستلام ({unreceivedInvoices.length})</option>
               <option value="received">تم الاستلام ({receivedInvoices.length})</option>
             </select>
@@ -221,7 +221,7 @@ export const ReceivedInvoicesView: React.FC<ReceivedInvoicesViewProps> = ({
                   : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300'
               }`}
             >
-              الكل ({invoices.length})
+              الكل ({allInvoices.length})
             </button>
             <button
               onClick={() => setReceiptFilter('not_received')}
@@ -246,7 +246,7 @@ export const ReceivedInvoicesView: React.FC<ReceivedInvoicesViewProps> = ({
           </div>
 
           <div className="text-slate-500 dark:text-slate-400 text-xs">
-            * حالة الاستلام تخضع للتحكم اليدوي المباشر فقط.
+            النتائج والإجماليات تشمل فواتير الموردين والعملاء.
           </div>
         </div>
       </div>
@@ -256,22 +256,23 @@ export const ReceivedInvoicesView: React.FC<ReceivedInvoicesViewProps> = ({
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-12 text-center space-y-3">
           <FileCheck className="w-12 h-12 mx-auto text-slate-400" />
           <h3 className="text-base font-bold text-slate-900 dark:text-white">لا توجد فواتير مطابقة</h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400">جرب تعديل معايير البحث أو تسجيل فاتورة مستلمة جديدة.</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400">جرّب تعديل معايير البحث أو إصدار فاتورة عميل جديدة.</p>
           <button
-            onClick={onAddInvoice}
+            onClick={onIssueCustomerInvoice}
             className="px-4 py-2 bg-emerald-600 text-white rounded-xl text-xs font-semibold shadow-sm cursor-pointer"
           >
-            تسجيل فاتورة الآن
+            إصدار فاتورة عميل
           </button>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredInvoices.map((inv) => {
+          {filteredInvoices.map(({ invoice: inv, kind, sourceName }) => {
             const isReceived = isReceiptReceived(inv.receiptStatus);
+            const invoiceKind = kind === 'customer' ? 'customer' : 'supplier';
 
             return (
               <div
-                key={inv.id}
+                key={`${kind}-${inv.id}`}
                 className={`rounded-2xl border p-5 flex flex-col justify-between transition-all shadow-xs ${
                   isReceived
                     ? 'bg-white dark:bg-slate-800/60 border-emerald-500/30'
@@ -287,7 +288,7 @@ export const ReceivedInvoicesView: React.FC<ReceivedInvoicesViewProps> = ({
 
                     {/* Quick Manual Toggle Button */}
                     <button
-                      onClick={() => onToggleReceiptStatus(inv.id)}
+                      onClick={() => onToggleReceiptStatus(inv.id, invoiceKind)}
                       className={`px-3 py-1 rounded-full text-xs font-bold border flex items-center gap-1.5 transition-all shadow-xs cursor-pointer ${
                         isReceived
                           ? 'bg-emerald-50 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-500/40 hover:bg-emerald-100'
@@ -313,13 +314,20 @@ export const ReceivedInvoicesView: React.FC<ReceivedInvoicesViewProps> = ({
                   <div className="space-y-1">
                     <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 text-xs">
                       <Building2 className="w-3.5 h-3.5" />
-                      <span>اسم الجهة الموردة:</span>
+                      <span>{kind === 'customer' ? 'العميل:' : 'الجهة الموردة:'}</span>
                     </div>
-                    <h3 className="font-bold text-slate-900 dark:text-white text-base truncate" title={inv.sourceName}>
-                      {inv.sourceName}
+                    <h3 className="font-bold text-slate-900 dark:text-white text-base truncate" title={sourceName}>
+                      {sourceName}
                     </h3>
+                    <span className={`inline-flex mt-1 px-2 py-0.5 rounded-full text-[10px] font-semibold ${
+                      kind === 'customer'
+                        ? 'bg-teal-50 text-teal-700 dark:bg-teal-500/15 dark:text-teal-300'
+                        : 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300'
+                    }`}>
+                      {kind === 'customer' ? 'فاتورة عميل' : 'فاتورة مورد'}
+                    </span>
                     <div className="text-2xl font-black text-slate-900 dark:text-white font-mono mt-1">
-                      {formatCurrency(inv.amount)}
+                      {formatCurrency(parseAmount(inv.amount))}
                     </div>
                   </div>
 
@@ -348,7 +356,7 @@ export const ReceivedInvoicesView: React.FC<ReceivedInvoicesViewProps> = ({
                   <div className="flex items-center gap-1">
                     {inv.image && (
                       <button
-                        onClick={() => onPreviewImage(inv.image!, `فاتورة مستلمة ${inv.invoiceNumber}`)}
+                        onClick={() => onPreviewImage(inv.image!, `فاتورة ${inv.invoiceNumber}`)}
                         className="p-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-xl transition-colors text-xs flex items-center gap-1 cursor-pointer"
                         title="معاينة الفاتورة أو المستند"
                       >
@@ -357,14 +365,14 @@ export const ReceivedInvoicesView: React.FC<ReceivedInvoicesViewProps> = ({
                       </button>
                     )}
                     <button
-                      onClick={() => onEditInvoice(inv)}
+                      onClick={() => onEditInvoice(inv, invoiceKind)}
                       className="p-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-xl transition-colors text-xs cursor-pointer"
                       title="تعديل الفاتورة"
                     >
                       <Edit2 className="w-3.5 h-3.5" />
                     </button>
                     <button
-                      onClick={() => onDeleteInvoice(inv.id)}
+                      onClick={() => onDeleteInvoice(inv.id, invoiceKind)}
                       className="p-2 bg-slate-100 hover:bg-rose-100 dark:bg-slate-700 dark:hover:bg-rose-900/60 text-slate-600 hover:text-rose-600 dark:text-slate-300 dark:hover:text-rose-300 rounded-xl transition-colors text-xs cursor-pointer"
                       title="حذف الفاتورة"
                     >
@@ -374,7 +382,7 @@ export const ReceivedInvoicesView: React.FC<ReceivedInvoicesViewProps> = ({
 
                   {/* Manual Toggle Link */}
                   <button
-                    onClick={() => onToggleReceiptStatus(inv.id)}
+                    onClick={() => onToggleReceiptStatus(inv.id, invoiceKind)}
                     className="text-xs text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white underline font-medium cursor-pointer"
                   >
                     تغيير إلى {isReceived ? 'لم يتم الاستلام' : 'تم الاستلام'}

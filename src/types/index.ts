@@ -37,6 +37,7 @@ export interface UserSession {
   userId: string;
   sessionId: string;
   token: string;
+  localTestOnly?: boolean;
   username: string;
   name: string;
   shopName: string;
@@ -93,7 +94,14 @@ export interface CustomerInvoice {
   createdAt: string; // CreatedAt
 }
 
-export type ReceiptStatus = 'received' | 'not_received' | 'تم الاستلام' | 'لم يتم الاستلام';
+export type ReceiptStatus =
+  | 'received'
+  | 'not_received'
+  | 'تم الاستلام'
+  | 'لم يتم الاستلام'
+  | 'مستلم'
+  | 'مستلمة'
+  | 'مستحق';
 
 export interface ReceivedInvoice {
   id: string; // ReceivedInvoiceID

@@ -20,6 +20,11 @@ export const LoginModal: React.FC<LoginModalProps> = ({
   isOpen,
   onLoginSuccess,
 }) => {
+  const hasLocalTestLogin = Boolean(
+    import.meta.env.DEV &&
+    import.meta.env.VITE_LOCAL_TEST_USERNAME &&
+    import.meta.env.VITE_LOCAL_TEST_PASSWORD
+  );
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -63,6 +68,11 @@ export const LoginModal: React.FC<LoginModalProps> = ({
           <p className="text-xs text-slate-500 dark:text-slate-400">
             نظام إدارة الشيكات والفواتير للمحلات المتعددة
           </p>
+          {hasLocalTestLogin && (
+            <p className="text-xs text-emerald-700 dark:text-emerald-400">
+              حساب التجربة المحلي مفعّل على بيئة التطوير فقط ولا يتصل بقاعدة البيانات.
+            </p>
+          )}
         </div>
 
         {/* Error Alert */}

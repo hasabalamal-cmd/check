@@ -53,7 +53,7 @@ export const AutomationBotView: React.FC<AutomationBotViewProps> = ({
             <Bot className="w-8 h-8" />
           </div>
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-white">
+            <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
               المساعد الآلي وجدولة تنبيهات الشيكات
             </h1>
             <p className="text-xs text-slate-400">
