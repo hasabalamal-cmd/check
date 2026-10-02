@@ -167,7 +167,7 @@ const translations: Record<string, string> = {
   'ترقية وتهيئة جداول Google Sheets لنظام Multi-Tenant':
     'Upgrade and configure Google Sheets for multi-tenant support',
   'تسجيل الخروج من النظام': 'Sign out',
-  'تسجيل الدخول إلى AZAT': 'Sign in to AZAT',
+  'تسجيل الدخول إلى Az Mang': 'Sign in to Az Mang',
   'تسجيل الدخول باستخدام Google': 'Sign in with Google',
   'تسجيل بيانات جهة جديدة أو هاتف للتواصل': 'Register a new entity or contact phone',
   'تسجيل شيك': 'Add check',

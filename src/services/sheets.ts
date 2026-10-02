@@ -23,7 +23,7 @@ export const exportDataToGoogleSheets = async (
   }
 ): Promise<ExportToSheetsResult> => {
   const currentDate = new Date().toLocaleDateString('ar-SA');
-  const title = `AZAT - إدارة الشيكات والفواتير (${currentDate})`;
+  const title = `Az Mang - إدارة الشيكات والفواتير (${currentDate})`;
 
   // Step 1: Create spreadsheet with 4 sheet tabs
   const createPayload = {

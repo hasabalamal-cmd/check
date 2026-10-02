@@ -168,17 +168,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
 
         {/* Bottom Utility Box */}
-        <div className="pt-4 border-t border-slate-800 space-y-2">
+        <div className="pt-4 border-t border-slate-200 dark:border-slate-800 space-y-2">
           {isAdmin && onOpenSettings && (
             <button
               onClick={onOpenSettings}
-              className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-emerald-600/15 hover:bg-emerald-600/25 text-emerald-300 rounded-xl text-xs font-semibold border border-emerald-500/30 transition-colors cursor-pointer"
+              className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-600/15 dark:hover:bg-emerald-600/25 text-emerald-800 dark:text-emerald-300 rounded-xl text-xs font-semibold border border-emerald-300 dark:border-emerald-500/30 transition-colors cursor-pointer"
             >
               <Settings className="w-3.5 h-3.5" />
               <span>{translate('الإعدادات وإدارة المحلات')}</span>
             </button>
           )}
-          <div className="text-[10px] text-center text-slate-500 dark:text-slate-500">
+          <div className="text-[10px] text-center font-medium text-slate-600 dark:text-slate-500">
             {currentShopName} • {translate('نظام مالي متعدد المحلات')}
           </div>
         </div>

@@ -78,7 +78,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
           <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-emerald-600 via-teal-500 to-cyan-400 mx-auto flex items-center justify-center shadow-lg shadow-emerald-500/20 text-white font-black text-2xl font-mono">
             A
           </div>
-          <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-wide">{translate("تسجيل الدخول إلى AZAT")}</h2>
+          <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-wide">{translate("تسجيل الدخول إلى Az Mang")}</h2>
           <p className="text-xs text-slate-500 dark:text-slate-400">
             {translate("نظام إدارة الشيكات والفواتير للمحلات المتعددة")}
           </p>

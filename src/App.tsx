@@ -337,7 +337,7 @@ export default function App() {
       const permission = await Notification.requestPermission();
       setHasBrowserPermission(permission === 'granted');
       if (permission === 'granted') {
-        new Notification(`AZAT - ${currentShopName}`, {
+        new Notification(`Az Mang - ${currentShopName}`, {
           body: 'تم تفعيل التنبيهات بنجاح! ستصلك إشعارات الشيكات في المواعيد المحددة.',
         });
       }

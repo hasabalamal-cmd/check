@@ -25,9 +25,9 @@ export const Footer: React.FC<FooterProps> = () => {
     <footer className="mt-12 py-6 border-t border-slate-800 text-slate-400 text-xs">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-2.5 text-xs sm:text-sm text-slate-400">
-          <span>© 2026 <strong className="text-white font-semibold">Ayman Dammag</strong></span>
+          <span>© 2026 <strong className="text-slate-900 dark:text-white font-semibold">Ayman Dammag</strong></span>
           <span className="text-slate-600">•</span>
-          <span className="font-bold text-emerald-400 tracking-wider">AZAT</span>
+          <span className="font-bold text-emerald-600 dark:text-emerald-400 tracking-wider">Az Mang</span>
           <span className="text-slate-600">•</span>
           <span>{translate("جميع الحقوق محفوظة")}</span>
         </div>
