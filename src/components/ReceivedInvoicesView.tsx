@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { ReceivedInvoice } from '../types';
 import { formatCurrency, formatArabicDate } from '../utils/checkCalculations';
+import { isReceiptReceived } from '../utils/receiptStatus';
 
 interface ReceivedInvoicesViewProps {
   invoices: ReceivedInvoice[];
@@ -49,7 +50,7 @@ export const ReceivedInvoicesView: React.FC<ReceivedInvoicesViewProps> = ({
         (inv.notes && inv.notes.toLowerCase().includes(term));
 
       // 2. Receipt status filter (strict manual check)
-      const isReceived = inv.receiptStatus === 'received' || inv.receiptStatus === 'تم الاستلام';
+      const isReceived = isReceiptReceived(inv.receiptStatus);
       const matchReceipt =
         receiptFilter === 'all'
           ? true
@@ -72,17 +73,13 @@ export const ReceivedInvoicesView: React.FC<ReceivedInvoicesViewProps> = ({
     });
 
   // KPI calculations
-  const unreceivedInvoices = invoices.filter(
-    (i) => i.receiptStatus === 'not_received' || i.receiptStatus === 'لم يتم الاستلام'
-  );
-  const totalUnreceivedAmount = unreceivedInvoices.reduce((sum, i) => sum + i.amount, 0);
+  const unreceivedInvoices = invoices.filter((invoice) => !isReceiptReceived(invoice.receiptStatus));
+  const totalUnreceivedAmount = unreceivedInvoices.reduce((sum, invoice) => sum + Number(invoice.amount || 0), 0);
 
-  const receivedInvoices = invoices.filter(
-    (i) => i.receiptStatus === 'received' || i.receiptStatus === 'تم الاستلام'
-  );
-  const totalReceivedAmount = receivedInvoices.reduce((sum, i) => sum + i.amount, 0);
+  const receivedInvoices = invoices.filter((invoice) => isReceiptReceived(invoice.receiptStatus));
+  const totalReceivedAmount = receivedInvoices.reduce((sum, invoice) => sum + Number(invoice.amount || 0), 0);
 
-  const totalAllAmount = invoices.reduce((sum, i) => sum + i.amount, 0);
+  const totalAllAmount = invoices.reduce((sum, invoice) => sum + Number(invoice.amount || 0), 0);
 
   return (
     <div className="space-y-6">
@@ -270,7 +267,7 @@ export const ReceivedInvoicesView: React.FC<ReceivedInvoicesViewProps> = ({
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredInvoices.map((inv) => {
-            const isReceived = inv.receiptStatus === 'received' || inv.receiptStatus === 'تم الاستلام';
+            const isReceived = isReceiptReceived(inv.receiptStatus);
 
             return (
               <div

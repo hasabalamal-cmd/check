@@ -13,6 +13,7 @@ import { getTodayString } from '../utils/checkCalculations';
 import { MultipleFileUploader } from './MultipleFileUploader';
 import { parseAttachments, serializeAttachments } from '../utils/imageUrl';
 import { getActiveShopId } from '../services/auth';
+import { isReceiptReceived } from '../utils/receiptStatus';
 
 interface ReceivedInvoiceFormModalProps {
   isOpen: boolean;
@@ -86,7 +87,7 @@ export const ReceivedInvoiceFormModal: React.FC<ReceivedInvoiceFormModalProps> =
       amount: Number(amount),
       invoiceDate,
       receiptStatus,
-      receiptDate: (receiptStatus === 'received' || receiptStatus === 'تم الاستلام') ? (receiptDate || getTodayString()) : undefined,
+      receiptDate: isReceiptReceived(receiptStatus) ? (receiptDate || getTodayString()) : undefined,
       notes: notes.trim(),
       image: serializedImage,
       attachments,
@@ -95,7 +96,7 @@ export const ReceivedInvoiceFormModal: React.FC<ReceivedInvoiceFormModalProps> =
     onClose();
   };
 
-  const isReceived = receiptStatus === 'received' || receiptStatus === 'تم الاستلام';
+  const isReceived = isReceiptReceived(receiptStatus);
 
   return (
     <div className="mobile-entry-backdrop fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 dark:bg-black/80 backdrop-blur-sm p-4 animate-in fade-in overflow-y-auto">

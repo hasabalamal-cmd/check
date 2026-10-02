@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { Customer, CheckItem, CustomerInvoice, ReceivedInvoice } from '../types';
 import { formatCurrency, formatArabicDate, CHECK_STATUS_CONFIG } from '../utils/checkCalculations';
+import { isReceiptReceived } from '../utils/receiptStatus';
 
 interface DashboardProps {
   checks: CheckItem[];
@@ -41,17 +42,13 @@ export const Dashboard: React.FC<DashboardProps> = ({
   currentShopName = 'Bunn',
 }) => {
   // 1. Unreceived Invoices Stats (لم يتم استلام مستحقها)
-  const unreceivedInvoices = receivedInvoices.filter(
-    (inv) => inv.receiptStatus === 'not_received' || inv.receiptStatus === 'لم يتم الاستلام'
-  );
-  const totalUnreceivedAmount = unreceivedInvoices.reduce((sum, inv) => sum + inv.amount, 0);
+  const unreceivedInvoices = receivedInvoices.filter((inv) => !isReceiptReceived(inv.receiptStatus));
+  const totalUnreceivedAmount = unreceivedInvoices.reduce((sum, inv) => sum + Number(inv.amount || 0), 0);
   const countUnreceivedInvoices = unreceivedInvoices.length;
 
   // 2. Received Invoices Stats (الفواتير المستلمة)
-  const receivedInvoicesList = receivedInvoices.filter(
-    (inv) => inv.receiptStatus === 'received' || inv.receiptStatus === 'تم الاستلام'
-  );
-  const totalReceivedAmount = receivedInvoicesList.reduce((sum, inv) => sum + inv.amount, 0);
+  const receivedInvoicesList = receivedInvoices.filter((inv) => isReceiptReceived(inv.receiptStatus));
+  const totalReceivedAmount = receivedInvoicesList.reduce((sum, inv) => sum + Number(inv.amount || 0), 0);
   const countReceivedInvoices = receivedInvoicesList.length;
 
   // 3. Upcoming Checks (الشيكات القادمة)
@@ -136,13 +133,13 @@ export const Dashboard: React.FC<DashboardProps> = ({
           {/* 1 & 2: الفواتير التي لم يتم استلام مستحقها */}
           <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-amber-500/30 shadow-sm hover:shadow-md hover:border-amber-500/50 transition-all relative overflow-hidden group">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-amber-700 dark:text-amber-400">الفواتير المستلمة</span>
+              <span className="text-xs font-semibold text-amber-700 dark:text-amber-400">الفواتير غير المستلمة</span>
               <div className="p-2 bg-amber-500/15 text-amber-600 dark:text-amber-400 rounded-xl">
                 <Clock className="w-5 h-5" />
               </div>
             </div>
             <div className="mt-3">
-              <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">لم يتم استلام مستحقها</div>
+              <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">لم يتم استلامها بعد</div>
               <div className="text-2xl font-black text-amber-600 dark:text-amber-300 font-mono mt-1">
                 {formatCurrency(totalUnreceivedAmount)}
               </div>
@@ -164,7 +161,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
               </div>
             </div>
             <div className="mt-3">
-              <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">تم استلام مستحقها</div>
+              <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">تم استلامها</div>
               <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400 font-mono mt-1">
                 {formatCurrency(totalReceivedAmount)}
               </div>
@@ -389,7 +386,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
           <div className="space-y-2.5 flex-1">
             {receivedInvoices.slice(0, 5).map((rinv) => {
-              const isReceived = rinv.receiptStatus === 'received' || rinv.receiptStatus === 'تم الاستلام';
+              const isReceived = isReceiptReceived(rinv.receiptStatus);
               return (
                 <div
                   key={rinv.id}

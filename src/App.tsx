@@ -16,6 +16,7 @@ import {
   formatArabicDate,
   sortAlertsByClosest,
 } from './utils/checkCalculations';
+import { isReceiptReceived } from './utils/receiptStatus';
 import {
   getCurrentSession,
   getStoredShops,
@@ -69,7 +70,7 @@ import { ShopManagementModal } from './components/ShopManagementModal';
 
 export default function App() {
   const [theme, setTheme] = useState<'dark' | 'light'>(() => (
-    localStorage.getItem('sanad_theme') === 'light' ? 'light' : 'dark'
+    localStorage.getItem('sanad_theme_preference_v2') === 'dark' ? 'dark' : 'light'
   ));
 
   // Multi-Tenant Session & Shops State
@@ -142,7 +143,7 @@ export default function App() {
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark');
-    localStorage.setItem('sanad_theme', theme);
+    localStorage.setItem('sanad_theme_preference_v2', theme);
   }, [theme]);
 
   // Switch Active Shop Handler
@@ -645,7 +646,7 @@ export default function App() {
     let targetDate = '';
     const updated = receivedInvoices.map((inv) => {
       if (inv.id === id) {
-        const isCurrentReceived = inv.receiptStatus === 'received' || inv.receiptStatus === 'تم الاستلام';
+        const isCurrentReceived = isReceiptReceived(inv.receiptStatus);
         const nextStatus = isCurrentReceived ? ('not_received' as const) : ('received' as const);
         nextStatusArabic = nextStatus === 'received' ? 'تم الاستلام' : 'لم يتم الاستلام';
         targetDate = nextStatus === 'received' ? getTodayString() : '';
@@ -727,7 +728,7 @@ export default function App() {
   // Badge calculations
   const unreadAlertsCount = notifications.filter((n) => !n.isRead).length;
   const unreceivedInvoicesCount = receivedInvoices.filter(
-    (i) => i.receiptStatus === 'not_received' || i.receiptStatus === 'لم يتم الاستلام'
+    (invoice) => !isReceiptReceived(invoice.receiptStatus)
   ).length;
   const dueTodayChecksCount = checks.filter(
     (c) => c.status === 'due_today' || c.status === 'مستحق اليوم'
