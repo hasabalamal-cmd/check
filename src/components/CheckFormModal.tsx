@@ -126,6 +126,7 @@ export const CheckFormModal: React.FC<CheckFormModalProps> = ({
   const customerRelatedInvoices = customerInvoices.filter(
     (inv) => inv.customerId === customerId
   );
+  const isEditing = Boolean(initialData?.id);
 
   return (
     <div className="mobile-entry-backdrop fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 dark:bg-black/80 backdrop-blur-sm p-4 animate-in fade-in overflow-y-auto">
@@ -138,7 +139,7 @@ export const CheckFormModal: React.FC<CheckFormModalProps> = ({
             </div>
             <div>
               <h3 className="font-bold text-lg text-slate-900 dark:text-white">
-                {translate(initialData ? 'تعديل بيانات الشيك' : 'تسجيل شيك صادر جديد')}
+                {translate(isEditing ? 'تعديل بيانات الشيك' : 'تسجيل شيك صادر جديد')}
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400">
                 {translate('المحل الحالي:')} <span className="text-emerald-600 dark:text-emerald-400 font-semibold">{currentShopName || getActiveShopId()}</span>
@@ -358,7 +359,7 @@ export const CheckFormModal: React.FC<CheckFormModalProps> = ({
               type="submit"
               className="px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs sm:text-sm font-bold shadow-md shadow-blue-500/20 transition-all cursor-pointer"
             >
-              {translate(initialData ? 'حفظ تعديلات الشيك' : 'تسجيل الشيك')}
+              {translate(isEditing ? 'حفظ تعديلات الشيك' : 'تسجيل الشيك')}
             </button>
           </div>
         </form>

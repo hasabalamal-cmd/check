@@ -407,9 +407,9 @@ export default function App() {
   const handleSaveCheck = async (checkData: Partial<CheckItem>) => {
     let updated: CheckItem[];
     let targetCheck: CheckItem;
-    const isEdit = Boolean(checkToEdit);
+    const isEdit = Boolean(checkToEdit?.id);
 
-    if (checkToEdit) {
+    if (isEdit && checkToEdit) {
       targetCheck = { ...checkToEdit, ...checkData } as CheckItem;
       updated = checks.map((chk) => (chk.id === checkToEdit.id ? targetCheck : chk));
     } else {
